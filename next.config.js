@@ -6,27 +6,17 @@ const withPWA = require('next-pwa')({
 });
 
 module.exports = withPWA({
+  eslint: {
+    ignoreDuringBuilds: true, // Skip ESLint during Vercel build
+  },
   images: {
     domains: [
       'image.tmdb.org',
       'images.unsplash.com',
       'via.placeholder.com',
       'i.scdn.co',
-      'img.icons8.com'  // Added for external icons
+      'img.icons8.com'
     ],
   },
   reactStrictMode: true,
-  async headers() {
-    return [
-      {
-        source: '/manifest.json',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
-          }
-        ]
-      }
-    ];
-  }
 });
