@@ -19,6 +19,11 @@ const News = dynamic(() => import('./News'), {
   loading: () => <LoadingSpinner /> 
 });
 
+const FileManager = dynamic(() => import('./FileManager'), { 
+  ssr: false, 
+  loading: () => <LoadingSpinner /> 
+});
+
 const Anime = dynamic(() => import('./Anime'), { 
   ssr: false, 
   loading: () => <LoadingSpinner /> 
@@ -81,6 +86,8 @@ const Layout = ({ initialMovies = [], initialNews = [] }) => {
         return <Music user={user} />;
       case 'news':
         return <News initialData={initialNews} />;
+      case 'files':
+        return <FileManager />; // Added FileManager
       case 'sports':
         return <Sports />;
       case 'gaming':
