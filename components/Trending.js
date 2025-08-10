@@ -443,7 +443,7 @@ const Trending = () => {
               <span className="font-bold">HOT</span>
             </div>
           </div>
-          <p className="text-gray-600">What's popular right now across all categories</p>
+          <p className="text-gray-600">{`Whats popular right now across all categories`}</p>
         </div>
       </div>
 
