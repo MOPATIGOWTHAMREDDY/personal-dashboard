@@ -1,366 +1,530 @@
-import React, { useState, useEffect, useRef } from 'react';
+// components/AIPage.js
+'use client';
+import { useState, useEffect, useRef } from 'react';
+import { 
+  MessageCircle, Send, Loader2, Bot, User, Image as ImageIcon, 
+  Brain, Code, Zap, Star, Cpu, Sparkles, HardDrive, Rocket,
+  Copy, CheckCircle, Download, Settings, Trash2, ChevronDown,
+  AlertTriangle, RefreshCw
+} from 'lucide-react';
 
-const PuterClaudeChat = () => {
-  const [message, setMessage] = useState('');
-  const [response, setResponse] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('gpt-4.1-nano'); // Default as per docs
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [puterLoaded, setPuterLoaded] = useState(false);
-  const [error, setError] = useState('');
-  const responseRef = useRef(null);
+export default function AIPage() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('gpt-4o');
+  const [showModelSelector, setShowModelSelector] = useState(false);
+  const [copied, setCopied] = useState('');
+  const [puterReady, setPuterReady] = useState(false);
+  const [connectionError, setConnectionError] = useState('');
+  
+  const containerRef = useRef(null);
 
-  // Load Puter.js script
+  // ALL AVAILABLE MODELS
+  const models = [
+    // OpenAI Models
+    { id: 'gpt-4o', name: 'GPT-4o', provider: 'OpenAI', icon: Brain, color: 'green', type: 'text' },
+    { id: 'gpt-4.1', name: 'GPT-4.1', provider: 'OpenAI', icon: Zap, color: 'blue', type: 'text' },
+    { id: 'o3-mini', name: 'o3-mini', provider: 'OpenAI', icon: Star, color: 'yellow', type: 'text' },
+    
+    // Claude Models  
+    { id: 'claude-sonnet-4', name: 'Claude Sonnet 4', provider: 'Anthropic', icon: Sparkles, color: 'orange', type: 'text' },
+    { id: 'claude-opus-4', name: 'Claude Opus 4', provider: 'Anthropic', icon: Star, color: 'pink', type: 'text' },
+    
+    // Grok Models (xAI)
+    { id: 'x-ai/grok-4', name: 'Grok 4', provider: 'xAI', icon: HardDrive, color: 'cyan', type: 'text' },
+    { id: 'x-ai/grok-3', name: 'Grok 3', provider: 'xAI', icon: Zap, color: 'teal', type: 'text' },
+    
+    // OpenRouter Models
+    { id: 'openrouter:meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', provider: 'Meta', icon: Bot, color: 'emerald', type: 'text' },
+    { id: 'openrouter:deepseek/deepseek-r1', name: 'DeepSeek R1', provider: 'DeepSeek', icon: Code, color: 'purple', type: 'text' },
+    { id: 'openrouter:anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic', icon: Sparkles, color: 'orange', type: 'text' },
+    
+    // Image Generation
+    { id: 'dall-e-3', name: 'DALL-E 3', provider: 'OpenAI', icon: ImageIcon, color: 'violet', type: 'image' },
+  ];
+
+  // Quick Prompts
+  const quickPrompts = [
+    { text: "Explain quantum computing in simple terms", icon: Brain, model: 'gpt-4o' },
+    { text: "Write Python code for data analysis", icon: Code, model: 'openrouter:deepseek/deepseek-r1' },
+    { text: "Create a business strategy", icon: Zap, model: 'claude-opus-4' },
+    { text: "Generate: A futuristic city at sunset", icon: ImageIcon, model: 'dall-e-3', isImage: true },
+  ];
+
   useEffect(() => {
-    if (window.puter) {
-      setPuterLoaded(true);
-      console.log('✅ Puter.js already loaded');
+    checkPuterConnection();
+    
+    // Check for quick prompt from Home page
+    const savedPrompt = localStorage.getItem('quickPrompt');
+    if (savedPrompt) {
+      try {
+        const prompt = JSON.parse(savedPrompt);
+        if (prompt.model) setSelectedModel(prompt.model);
+        if (prompt.prompt) setInput(prompt.prompt);
+        localStorage.removeItem('quickPrompt');
+      } catch (e) {
+        console.log('No valid quick prompt found');
+      }
+    }
+
+    if (messages.length === 0) {
+      setMessages([{
+        id: Date.now(),
+        speaker: 'assistant',
+        text: '🚀 Welcome!',
+        model: selectedModel,
+        timestamp: new Date()
+      }]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const checkPuterConnection = () => {
+    // Check if Puter.js is loaded
+    if (typeof window !== 'undefined' && window.puter) {
+      setPuterReady(true);
+      setConnectionError('');
+    } else {
+      setPuterReady(false);
+      setConnectionError('Puter.js not loaded. Please refresh the page.');
+      
+      // Retry after 2 seconds
+      setTimeout(() => {
+        if (window.puter) {
+          setPuterReady(true);
+          setConnectionError('');
+        }
+      }, 2000);
+    }
+  };
+
+  const sendMessage = async (messageText = input, isImageGeneration = false) => {
+    if (!messageText.trim()) return;
+
+    const userMessage = {
+      id: Date.now(),
+      speaker: 'user',
+      text: messageText.trim(),
+      timestamp: new Date(),
+      type: isImageGeneration ? 'image-request' : 'text'
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setLoading(true);
+
+    // Check Puter availability
+    if (!puterReady || !window.puter) {
+      const errorMsg = {
+        id: Date.now() + 1,
+        speaker: 'assistant',
+        text: '❌ AI service not ready. Please wait a moment and try again.\n\n🔄 Make sure you have internet connection.',
+        model: selectedModel,
+        timestamp: new Date(),
+        error: true
+      };
+      setMessages(prev => [...prev, errorMsg]);
+      setLoading(false);
+      checkPuterConnection();
       return;
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://js.puter.com/v2/';
-    script.onload = () => {
-      setPuterLoaded(true);
-      console.log('✅ Puter.js loaded successfully');
-    };
-    script.onerror = () => {
-      setError('❌ Failed to load Puter.js library');
-    };
-    document.head.appendChild(script);
-
-    return () => {
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-    };
-  }, []);
-
-  // Handle regular (non-streaming) chat - Following documentation pattern
-  const handleRegularChat = async () => {
-    if (!message.trim() || !puterLoaded) return;
-
-    setIsLoading(true);
-    setResponse('');
-    setError('');
-
     try {
-      console.log('🚀 Sending message:', message);
-      console.log('📋 Using model:', selectedModel);
-      
-      // Use the exact API format from documentation
-      const result = await window.puter.ai.chat(message, { model: selectedModel });
-      
-      console.log('📦 API Response:', result);
-
-      // According to docs, response should be directly usable
-      if (typeof result === 'string') {
-        setResponse(result);
-      } else if (result && typeof result === 'object') {
-        // Handle object responses - look for common properties
-        const responseText = result.message?.content?.[0]?.text || 
-                           result.message?.content || 
-                           result.content || 
-                           result.text ||
-                           JSON.stringify(result, null, 2);
-        setResponse(responseText);
-      } else {
-        setResponse('Received unexpected response format');
-        console.warn('Unexpected response:', result);
-      }
-
-    } catch (error) {
-      console.error('❌ API Error:', error);
-      
-      // Handle error according to the pattern seen in your logs
-      let errorMessage = 'Unknown error occurred';
-      if (error.message) {
-        errorMessage = error.message;
-      } else if (typeof error === 'object' && error.error) {
-        errorMessage = error.error.message || JSON.stringify(error.error);
-      }
-      
-      setError(`API Error: ${errorMessage}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle streaming chat - Following documentation example
-  const handleStreamingChat = async () => {
-    if (!message.trim() || !puterLoaded) return;
-
-    setIsLoading(true);
-    setResponse('');
-    setError('');
-
-    try {
-      console.log('🌊 Starting streaming for:', message);
-      console.log('📋 Using model:', selectedModel);
-      
-      // Use exact streaming format from documentation
-      const result = await window.puter.ai.chat(message, { 
-        model: selectedModel, 
-        stream: true 
-      });
-
-      console.log('📦 Streaming object:', result);
-
-      let accumulatedResponse = '';
-      
-      // Follow the documentation pattern: for await (const part of result)
-      if (result && typeof result[Symbol.asyncIterator] === 'function') {
-        for await (const part of result) {
-          console.log('🔄 Stream part:', part);
-          // Documentation shows part?.text pattern
-          if (part?.text) {
-            accumulatedResponse += part.text;
-            setResponse(accumulatedResponse);
-          }
+      if (isImageGeneration || selectedModel === 'dall-e-3') {
+        // Image Generation
+        try {
+          const imageElement = await window.puter.ai.txt2img(messageText);
+          const imageMessage = {
+            id: Date.now() + 1,
+            speaker: 'assistant',
+            text: `🎨 Generated image: "${messageText}"`,
+            image: imageElement.src,
+            model: selectedModel,
+            timestamp: new Date(),
+            type: 'image'
+          };
+          setMessages(prev => [...prev, imageMessage]);
+        } catch (imgError) {
+          throw new Error(`Image generation failed: ${imgError.message}`);
         }
       } else {
-        throw new Error('Streaming response is not iterable');
+        // Text Generation with Streaming
+        try {
+          const response = await window.puter.ai.chat(messageText, { 
+            model: selectedModel, 
+            stream: true 
+          });
+
+          let fullText = '';
+          const assistantMessage = {
+            id: Date.now() + 1,
+            speaker: 'assistant',
+            text: '',
+            model: selectedModel,
+            timestamp: new Date(),
+            streaming: true
+          };
+
+          setMessages(prev => [...prev, assistantMessage]);
+
+          for await (const chunk of response) {
+            if (chunk?.text) {
+              fullText += chunk.text;
+              setMessages(prev => {
+                const newMessages = [...prev];
+                const lastMessage = newMessages[newMessages.length - 1];
+                if (lastMessage && lastMessage.speaker === 'assistant') {
+                  lastMessage.text = fullText;
+                }
+                return newMessages;
+              });
+            }
+          }
+
+          // Finalize message
+          setMessages(prev => {
+            const newMessages = [...prev];
+            const lastMessage = newMessages[newMessages.length - 1];
+            if (lastMessage && lastMessage.speaker === 'assistant') {
+              lastMessage.streaming = false;
+            }
+            return newMessages;
+          });
+        } catch (textError) {
+          throw new Error(`Chat failed: ${textError.message}`);
+        }
       }
-
-      console.log('✅ Streaming completed');
-
     } catch (error) {
-      console.error('❌ Streaming Error:', error);
+      console.error('AI Error:', error);
       
-      let errorMessage = 'Streaming failed';
-      if (error.message) {
-        errorMessage = error.message;
+      // Detailed error message
+      let errorText = '❌ Sorry, I encountered an error:\n\n';
+      
+      if (error.message.includes('Network')) {
+        errorText += '🌐 Network issue - Check your internet connection';
+      } else if (error.message.includes('rate limit')) {
+        errorText += '⏱️ Rate limit reached - Please wait a moment';
+      } else if (error.message.includes('model')) {
+        errorText += `🤖 Model "${selectedModel}" might be unavailable - Try a different model`;
+      } else {
+        errorText += `🔧 Technical error: ${error.message}\n\n💡 Try:\n• Refreshing the page\n• Using a different model\n• Checking your connection`;
       }
-      
-      setError(`Streaming Error: ${errorMessage}`);
+
+      const errorMsg = {
+        id: Date.now() + 1,
+        speaker: 'assistant',
+        text: errorText,
+        model: selectedModel,
+        timestamp: new Date(),
+        error: true
+      };
+      setMessages(prev => [...prev, errorMsg]);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  // Auto-scroll response area
-  useEffect(() => {
-    if (responseRef.current) {
-      responseRef.current.scrollTop = responseRef.current.scrollHeight;
-    }
-  }, [response]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (isStreaming) {
-      handleStreamingChat();
-    } else {
-      handleRegularChat();
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(text);
+      setTimeout(() => setCopied(''), 2000);
+    } catch (err) {
+      console.error('Copy failed:', err);
     }
   };
 
   const clearChat = () => {
-    setMessage('');
-    setResponse('');
-    setError('');
+    setMessages([{
+      id: Date.now(),
+      speaker: 'assistant',
+      text: '👋 Chat cleared! Ready for a fresh conversation. How can I help you?',
+      model: selectedModel,
+      timestamp: new Date()
+    }]);
   };
 
-  // Simple connection test using documentation example
-  const testConnection = async () => {
-    if (!puterLoaded) {
-      setError('Puter.js not loaded yet');
-      return;
-    }
-
-    setError('Testing connection...');
-
-    try {
-      // Use the simplest example from documentation
-      const result = await window.puter.ai.chat('What is life?');
-      console.log('✅ Connection test result:', result);
-      setError('✅ Connection successful! API is working.');
-      setTimeout(() => setError(''), 3000);
-    } catch (error) {
-      console.error('❌ Connection test failed:', error);
-      setError(`Connection failed: ${error.message || 'Unknown error'}`);
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const currentModel = models.find(m => m.id === selectedModel);
+      sendMessage(input, currentModel?.type === 'image');
     }
   };
 
-  if (!puterLoaded && !error) {
-    return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="flex flex-col items-center justify-center h-64 bg-white rounded-xl shadow-sm border border-gray-200">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-          <span className="text-lg text-gray-600">Loading Puter.js...</span>
-        </div>
-      </div>
-    );
-  }
+  const currentModel = models.find(m => m.id === selectedModel);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
       {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800 mb-3 flex items-center justify-center">
-          <span className="mr-3 text-5xl">🤖</span>
-          Puter.js AI Chat
-        </h1>
-        <p className="text-lg text-gray-600">Free access to multiple AI models</p>
-        <div className="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-          <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
-          No API keys • User pays model
-        </div>
-      </div>
-
-      {/* Debug Panel */}
-      <div className="bg-white/90 backdrop-blur rounded-xl p-4 mb-6 border border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between">
-          <button 
-            onClick={testConnection}
-            className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-          >
-            🔧 Test Connection
-          </button>
-          <div className="text-sm text-gray-600">
-            Status: <span className={`font-medium ${puterLoaded ? 'text-green-600' : 'text-red-600'}`}>
-              {puterLoaded ? '✅ Ready' : '❌ Loading'}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Model Selection */}
-      <div className="bg-white/90 backdrop-blur rounded-xl p-6 mb-6 border border-gray-200 shadow-sm">
-        <div className="flex flex-wrap gap-6 items-center">
-          <div className="flex-1 min-w-64">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              AI Model:
-            </label>
-            <select 
-              value={selectedModel} 
-              onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-            >
-              <option value="gpt-4.1-nano">GPT-4.1 Nano (Default)</option>
-              <option value="gpt-4o-mini">GPT-4o Mini</option>
-              <option value="gpt-4o">GPT-4o</option>
-              <option value="claude-sonnet-4">Claude Sonnet 4</option>
-              <option value="claude-opus-4">Claude Opus 4</option>
-              <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-              <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-              <option value="deepseek-chat">DeepSeek Chat</option>
-            </select>
-          </div>
-
-          <div className="flex items-center">
-            <label className="flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isStreaming}
-                onChange={(e) => setIsStreaming(e.target.checked)}
-                className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <span className="text-sm font-medium text-gray-700">🌊 Stream Response</span>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Chat Interface */}
-      <form onSubmit={handleSubmit} className="bg-white/90 backdrop-blur rounded-xl p-6 mb-6 border border-gray-200 shadow-sm">
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Your Message:
-          </label>
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Try: 'What is life?' or 'Explain quantum computing simply'"
-            className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical min-h-24 bg-white"
-            rows={3}
-          />
-        </div>
-
-        <div className="flex gap-3">
-          <button 
-            type="submit" 
-            disabled={isLoading || !message.trim() || !puterLoaded}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center"
-          >
-            {isLoading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                🤔 AI Thinking...
-              </>
-            ) : (
-              '💭 Send Message'
-            )}
-          </button>
-          
-          <button 
-            type="button" 
-            onClick={clearChat}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-          >
-            🗑️ Clear
-          </button>
-        </div>
-      </form>
-
-      {/* Error Display */}
-      {error && (
-        <div className={`rounded-xl p-4 mb-6 border ${
-          error.includes('✅') 
-            ? 'bg-green-50 border-green-200' 
-            : 'bg-red-50 border-red-200'
-        }`}>
-          <div className="flex items-start">
-            <span className="text-xl mr-3">
-              {error.includes('✅') ? '✅' : '⚠️'}
-            </span>
+      <header className="border-b border-white/10 bg-black/40 backdrop-blur-xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <MessageCircle className="text-blue-400" size={28} />
+              <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full animate-pulse ${
+                puterReady ? 'bg-green-500' : 'bg-red-500'
+              }`} />
+            </div>
             <div>
-              <h3 className={`font-semibold mb-1 ${
-                error.includes('✅') ? 'text-green-800' : 'text-red-800'
-              }`}>
-                {error.includes('✅') ? 'Success' : 'Error'}
-              </h3>
-              <p className={`text-sm ${
-                error.includes('✅') ? 'text-green-700' : 'text-red-700'
-              }`}>
-                {error}
+              <h1 className="text-xl font-bold">AI Assistant</h1>
+              <p className="text-xs text-gray-400">
+                {puterReady ? 'Connected • Free AI via Puter.js' : 'Connecting...'}
               </p>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Response Display */}
-      {response && (
-        <div className="bg-white/90 backdrop-blur rounded-xl p-6 mb-6 border border-gray-200 shadow-sm">
-          <div className="flex items-center mb-4">
-            <span className="text-2xl mr-3">🤖</span>
-            <h3 className="text-lg font-semibold text-gray-800">AI Response:</h3>
+          
+          <div className="flex items-center gap-2">
+            {!puterReady && (
+              <button
+                onClick={checkPuterConnection}
+                className="p-2 rounded-lg bg-orange-500/20 hover:bg-orange-500/30 transition-colors">
+                <RefreshCw size={18} />
+              </button>
+            )}
+            <button
+              onClick={() => setShowModelSelector(!showModelSelector)}
+              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
+              <Settings size={18} />
+            </button>
+            <button
+              onClick={clearChat}
+              className="p-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 transition-colors">
+              <Trash2 size={18} />
+            </button>
           </div>
-          <div 
-            ref={responseRef}
-            className="bg-gray-50 p-4 rounded-lg border border-gray-200 max-h-96 overflow-y-auto whitespace-pre-wrap text-gray-800 leading-relaxed"
-          >
-            {response}
-          </div>
         </div>
-      )}
 
-      {/* Footer */}
-      <div className="text-center pt-6 border-t border-gray-200">
-        <p className="text-sm text-gray-500">
-          Powered by{' '}
-          <a 
-            href="https://developer.puter.com" 
-            className="text-blue-500 hover:text-blue-600 underline" 
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            Puter
-          </a>
-        </p>
+        {/* Connection Error Alert */}
+        {connectionError && (
+          <div className="mb-3 p-3 bg-red-500/20 border border-red-500/30 rounded-lg flex items-center gap-2">
+            <AlertTriangle size={16} className="text-red-400" />
+            <span className="text-sm text-red-200">{connectionError}</span>
+          </div>
+        )}
+
+        {/* Model Selector */}
+        <div className="relative">
+          <button
+            onClick={() => setShowModelSelector(!showModelSelector)}
+            className="w-full flex items-center justify-between p-3 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition-colors">
+            <div className="flex items-center gap-2">
+              {currentModel && (
+                <>
+                  <currentModel.icon size={18} className={`text-${currentModel.color}-400`} />
+                  <span className="font-medium">{currentModel.name}</span>
+                  <span className="text-xs text-gray-400">({currentModel.provider})</span>
+                </>
+              )}
+            </div>
+            <ChevronDown size={18} className={`transition-transform ${showModelSelector ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Model Dropdown */}
+          {showModelSelector && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-black/90 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl z-10 max-h-80 overflow-y-auto">
+              {['OpenAI', 'Anthropic', 'xAI', 'Meta', 'DeepSeek'].map(provider => (
+                <div key={provider} className="p-2">
+                  <h3 className="text-xs font-semibold text-gray-400 px-3 py-2 uppercase tracking-wider">
+                    {provider}
+                  </h3>
+                  {models.filter(m => m.provider === provider).map(model => {
+                    const Icon = model.icon;
+                    return (
+                      <button
+                        key={model.id}
+                        onClick={() => {
+                          setSelectedModel(model.id);
+                          setShowModelSelector(false);
+                        }}
+                        className={`w-full flex items-center gap-3 p-3 rounded-lg hover:bg-white/10 transition-colors
+                          ${selectedModel === model.id ? 'bg-white/20 border-l-4 border-blue-500' : ''}`}>
+                        <Icon size={16} className={`text-${model.color}-400`} />
+                        <div className="flex-1 text-left">
+                          <div className="font-medium">{model.name}</div>
+                          <div className="text-xs text-gray-400 flex items-center gap-2">
+                            <span>{model.provider}</span>
+                            <span className={`px-2 py-0.5 rounded-full text-xs
+                              ${model.type === 'image' ? 'bg-purple-500/20 text-purple-300' :
+                                'bg-blue-500/20 text-blue-300'}`}>
+                              {model.type}
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Chat Messages */}
+      <div ref={containerRef} className="flex-1 overflow-y-auto p-4 space-y-4 pb-32">
+        {messages.map((message) => (
+          <div key={message.id} className={`flex ${message.speaker === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`flex items-start gap-3 max-w-[85%] ${message.speaker === 'user' ? 'flex-row-reverse' : ''}`}>
+              {/* Avatar */}
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                ${message.speaker === 'user' 
+                  ? 'bg-blue-600' 
+                  : message.error 
+                    ? 'bg-red-600' 
+                    : 'bg-gray-700'}`}>
+                {message.speaker === 'user' ? <User size={16} /> : <Bot size={16} />}
+              </div>
+
+              {/* Message Content */}
+              <div className={`rounded-2xl p-4 ${message.speaker === 'user' 
+                ? 'bg-blue-600 text-white' 
+                : message.error 
+                  ? 'bg-red-500/20 border border-red-500/30' 
+                  : 'bg-white/10 border border-white/20'
+                } backdrop-blur-sm`}>
+                
+                {/* Text Content */}
+                <div className="whitespace-pre-wrap">{message.text}</div>
+                
+                {/* Image Content */}
+                {message.image && (
+                  <div className="mt-3">
+                    <img 
+                      src={message.image} 
+                      alt="Generated image" 
+                      className="max-w-full h-auto rounded-lg shadow-lg"
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => copyToClipboard(message.image)}
+                        className="px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg text-xs transition-colors">
+                        Copy URL
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Streaming Indicator */}
+                {message.streaming && (
+                  <div className="flex items-center gap-1 mt-2 text-gray-400">
+                    <Loader2 size={12} className="animate-spin" />
+                    <span className="text-xs">
+                      {currentModel?.type === 'image' ? 'Generating image...' : 'Thinking...'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Message Footer */}
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10">
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    {message.speaker === 'assistant' && message.model && (
+                      <>
+                        <span>{models.find(m => m.id === message.model)?.name}</span>
+                        <span>•</span>
+                      </>
+                    )}
+                    <span>{message.timestamp.toLocaleTimeString()}</span>
+                  </div>
+                  
+                  {message.speaker === 'assistant' && !message.streaming && !message.image && (
+                    <button
+                      onClick={() => copyToClipboard(message.text)}
+                      className="p-1 rounded hover:bg-white/20 transition-colors">
+                      {copied === message.text ? (
+                        <CheckCircle size={14} className="text-green-400" />
+                      ) : (
+                        <Copy size={14} />
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {/* Quick Prompts */}
+        {messages.length <= 1 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-6">
+            {quickPrompts.map((prompt, index) => {
+              const Icon = prompt.icon;
+              return (
+                <button
+                  key={index}
+                  onClick={() => {
+                    if (prompt.model) setSelectedModel(prompt.model);
+                    sendMessage(prompt.text, prompt.isImage);
+                  }}
+                  className="flex items-center gap-3 p-4 rounded-lg bg-white/5 hover:bg-white/10 
+                           border border-white/10 hover:border-white/20 transition-all text-left">
+                  <Icon size={20} className="text-blue-400 flex-shrink-0" />
+                  <div>
+                    <span className="text-sm">{prompt.text}</span>
+                    {prompt.model && (
+                      <div className="text-xs text-gray-400 mt-1">
+                        {models.find(m => m.id === prompt.model)?.name}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Input Area - Fixed at Bottom */}
+      <div className="fixed bottom-20 left-0 right-0 border-t border-white/10 bg-black/40 backdrop-blur-xl p-4">
+        <div className="flex items-end gap-3">
+          <div className="flex-1 relative">
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={currentModel?.type === 'image' ? 'Describe the image you want to generate...' : 'Ask me anything...'}
+              disabled={loading || !puterReady}
+              rows={1}
+              className="w-full bg-white/10 border border-white/20 rounded-2xl px-4 py-3 pr-12
+                       text-white placeholder-gray-400 resize-none focus:outline-none focus:border-blue-500
+                       disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ maxHeight: '120px' }}
+            />
+            
+            {/* Model Type Indicator */}
+            <div className="absolute bottom-2 right-12 text-xs text-gray-500">
+              {currentModel?.type === 'image' ? '🎨 Image' : '💬 Text'}
+            </div>
+          </div>
+          
+          <button
+            onClick={() => sendMessage(input, currentModel?.type === 'image')}
+            disabled={loading || !input.trim() || !puterReady}
+            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed
+                     text-white p-3 rounded-2xl transition-colors flex items-center justify-center
+                     min-w-[48px] h-12">
+            {loading ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : currentModel?.type === 'image' ? (
+              <ImageIcon size={20} />
+            ) : (
+              <Send size={20} />
+            )}
+          </button>
+        </div>
+
+        <div className="flex items-center justify-center mt-2 text-xs text-gray-500">
+          <span>
+            {puterReady ? 'Free AI • No API Keys • Powered by Puter.js' : 'Connecting to AI service...'}
+          </span>
+        </div>
       </div>
     </div>
   );
-};
-
-export default PuterClaudeChat;
+}
