@@ -1,114 +1,63 @@
-import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-import Navigation from './Navigation';
-import Home from './Home';
+// components/Layout.js
+import { useState, useEffect, useMemo } from 'react';
+import dynamic      from 'next/dynamic';
+import Navigation   from './Navigation';
 
-// Lazy load heavy components
-const Movies = dynamic(() => import('./Movies'), { 
-  ssr: false, 
-  loading: () => <LoadingSpinner /> 
-});
+/* ───────── CLIENT-ONLY PAGES ───────── */
+const Home          = dynamic(() => import('./Home')                 , { ssr:false });
+const Movies        = dynamic(() => import('./Movies')               , { ssr:false });
+const BudgetManager = dynamic(() => import('./BudgetManager')        , { ssr:false });
+const NotesManager  = dynamic(() => import('./NotesManager')         , { ssr:false });
+const News          = dynamic(() => import('./News')                 , { ssr:false });
+const MultiDrive    = dynamic(() => import('./MultiDriveFileManager'), { ssr:false });
+const Sports        = dynamic(() => import('./Sports')               , { ssr:false });
+const Profile       = dynamic(() => import('./Profile')              , { ssr:false });
+const AIPage        = dynamic(() => import('./AIPage')               , { ssr:false });
 
-const Music = dynamic(() => import('./Music'), { 
-  ssr: false, 
-  loading: () => <LoadingSpinner /> 
-});
-
-const News = dynamic(() => import('./News'), { 
-  ssr: false, 
-  loading: () => <LoadingSpinner /> 
-});
-
-const FileManager = dynamic(() => import('./FileManager'), { 
-  ssr: false, 
-  loading: () => <LoadingSpinner /> 
-});
-
-const Anime = dynamic(() => import('./Anime'), { 
-  ssr: false, 
-  loading: () => <LoadingSpinner /> 
-});
-
-const Series = dynamic(() => import('./Series'), { 
-  ssr: false, 
-  loading: () => <LoadingSpinner /> 
-});
-
-const Sports = dynamic(() => import('./Sports'), { 
-  ssr: false, 
-  loading: () => <LoadingSpinner /> 
-});
-
-const Gaming = dynamic(() => import('./Gaming'), { 
-  ssr: false, 
-  loading: () => <LoadingSpinner /> 
-});
-
-const Trending = dynamic(() => import('./Trending'), { 
-  ssr: false, 
-  loading: () => <LoadingSpinner /> 
-});
-
-const Profile = dynamic(() => import('./Profile'), { 
-  ssr: false, 
-  loading: () => <LoadingSpinner /> 
-});
-
-// Loading component
-const LoadingSpinner = () => (
-  <div className="min-h-screen bg-black flex items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+const Spinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-black">
+    <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-white" />
   </div>
 );
 
-const Layout = ({ initialMovies = [], initialNews = [] }) => {
-  const [activeCategory, setActiveCategory] = useState('home');
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem('dashboardUser');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
-
-  const renderContent = () => {
-    switch (activeCategory) {
-      case 'home':
-        return <Home setActiveCategory={setActiveCategory} initialMovies={initialMovies} initialNews={initialNews} />;
-      case 'movies':
-        return <Movies initialData={initialMovies} />;
-      case 'series':
-        return <Series />;
-      case 'anime':
-        return <Anime />;
-      case 'music':
-        return <Music user={user} />;
-      case 'news':
-        return <News initialData={initialNews} />;
-      case 'files':
-        return <FileManager />; // Added FileManager
-      case 'sports':
-        return <Sports />;
-      case 'gaming':
-        return <Gaming />;
-      case 'trending':
-        return <Trending />;
-      case 'profile':
-        return <Profile user={user} setUser={setUser} />;
-      default:
-        return <Home setActiveCategory={setActiveCategory} initialMovies={initialMovies} initialNews={initialNews} />;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-black text-white">
-      <Navigation activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
-      <main>
-        {renderContent()}
-      </main>
-    </div>
-  );
+const ROUTES = {
+  home   : { label:'Home'      , view:Home          },
+  movies : { label:'Movies'    , view:Movies        },
+  budget : { label:'Stocks'    , view:BudgetManager },
+  ai     : { label:'AI'        , view:AIPage        },
+  notes  : { label:'Notes'     , view:NotesManager  },
+  news   : { label:'News'      , view:News          },
+  drives : { label:'Drives'    , view:MultiDrive    },
+  sports : { label:'Sports'    , view:Sports        },
+  profile: { label:'Profile'   , view:Profile       },
 };
 
-export default Layout;
+export default function Layout({ initialMovies=[], initialNews=[] }) {
+  const [category, setCategory] = useState('home');
+  const [user, setUser]         = useState(null);
+
+  useEffect(()=>{
+    try{const s=localStorage.getItem('dashboardUser'); if(s) setUser(JSON.parse(s));}catch{}
+  },[]);
+
+  const Page = useMemo(()=>{
+    const C=ROUTES[category]?.view||(()=><Spinner/>);
+    if(category==='home')   return ()=> <C setActiveCategory={setCategory} initialMovies={initialMovies} initialNews={initialNews}/>;
+    if(category==='movies') return ()=> <C initialData={initialMovies}/>;
+    if(category==='news')   return ()=> <C initialData={initialNews}/>;
+    if(category==='profile')return ()=> <C user={user} setUser={setUser}/>;
+    return C;
+  },[category,user]);
+
+  return(
+    <div className="min-h-screen bg-black text-white">
+      {/* MAIN CONTENT - Full Screen */}
+      <main className="pb-20"> {/* Bottom padding for nav bar */}
+        <Page/>
+      </main>
+
+      {/* BOTTOM NAVIGATION - Always Visible */}
+      <Navigation active={category} setActive={setCategory} items={ROUTES}/>
+    </div>
+  );
+}

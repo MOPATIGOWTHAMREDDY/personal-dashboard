@@ -1,11 +1,10 @@
 import '../styles/globals.css';
-import { SessionProvider } from 'next-auth/react';
 import Script from 'next/script';
 import Head from 'next/head';
 
-function MyApp({ Component, pageProps: { session, ...pageProps } }) {
+function MyApp({ Component, pageProps }) {
   return (
-    <SessionProvider session={session}>
+    <>
       <Head>
         {/* PWA Meta Tags */}
         <meta name="application-name" content="Personal Dashboard" />
@@ -17,23 +16,16 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
         
         {/* PWA Manifest */}
         <link rel="manifest" href="/manifest.json" />
-        
-        {/* Icons using external URLs */}
-        <link rel="icon" href="https://img.icons8.com/?size=100&id=vktzxU8bOVMG&format=png&color=000000" />
         <link rel="apple-touch-icon" href="https://img.icons8.com/?size=100&id=uoRwwh0lz3Jp&format=png&color=000000" />
         <link rel="shortcut icon" href="https://img.icons8.com/?size=100&id=vktzxU8bOVMG&format=png&color=000000" />
         
         {/* SEO */}
-        <meta name="description" content="Your personal entertainment dashboard for movies, music, news and more" />
+        <meta name="description" content="Personal dashboard for budget, notes, movies, news and file management" />
         <meta property="og:title" content="Personal Dashboard" />
-        <meta property="og:description" content="Entertainment hub for movies, music, news and more" />
+        <meta property="og:description" content="Manage your budget, notes, entertainment and files in one place" />
         
         {/* Theme Colors */}
         <meta name="theme-color" content="#000000" />
-        
-        {/* iPhone 15 Optimizations */}
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="apple-touch-fullscreen" content="yes" />
       </Head>
 
       {/* Service Worker for PWA */}
@@ -54,7 +46,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
       </Script>
       
       <Component {...pageProps} />
-    </SessionProvider>
+    </>
   );
 }
 

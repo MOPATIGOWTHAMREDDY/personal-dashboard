@@ -8,7 +8,7 @@ import {
   SortAsc, SortDesc, Zap, Shield, Clock, Users, Tag, Archive, Activity,
   TrendingUp, FileCheck, AlertCircle, CheckSquare, Square, Play, Pause,
   Volume2, ZoomIn, Settings, Key, LogIn, LogOut, Wifi, WifiOff, Database,
-  Server, Globe, Smartphone
+  Server, Globe, Smartphone, Mail
 } from 'lucide-react';
 
 const MultiDriveFileManager = () => {
@@ -18,7 +18,7 @@ const MultiDriveFileManager = () => {
   const [currentFolder, setCurrentFolder] = useState(0);
   const [folderPath, setFolderPath] = useState([{ id: 0, name: 'Home' }]);
   const [uploading, setUploading] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -30,11 +30,59 @@ const MultiDriveFileManager = () => {
 
   // Multi-drive state
   const [currentDrive, setCurrentDrive] = useState('ddownload');
-  const [connectedDrives, setConnectedDrives] = useState({});
+  const [connectedDrives, setConnectedDrives] = useState({
+    ddownload: { connected: true },
+    googledrive: { connected: false },
+    mega: { connected: false },
+    terabox: { connected: false },
+    degoo: { connected: false }
+  });
   const [driveStats, setDriveStats] = useState({});
   const [showDriveSetup, setShowDriveSetup] = useState(false);
   const [setupDrive, setSetupDrive] = useState(null);
   const [authInProgress, setAuthInProgress] = useState(null);
+  const [loginMessage, setLoginMessage] = useState('');
+
+  // Sample files for demonstration
+  const sampleFiles = [
+    {
+      id: 'sample1',
+      name: 'vacation-photos.zip',
+      size: 25600000,
+      created_at: '2024-01-15T10:30:00Z',
+      type: 'archive',
+      downloads: 12,
+      link: '#',
+      drive: 'ddownload'
+    },
+    {
+      id: 'sample2',
+      name: 'presentation.pdf',
+      size: 5120000,
+      created_at: '2024-01-20T14:45:00Z',
+      type: 'document',
+      downloads: 8,
+      link: '#',
+      drive: 'ddownload'
+    },
+    {
+      id: 'sample3',
+      name: 'music-collection.mp3',
+      size: 8960000,
+      created_at: '2024-01-18T09:15:00Z',
+      type: 'audio',
+      downloads: 25,
+      link: '#',
+      drive: 'ddownload'
+    }
+  ];
+
+  // Sample folders
+  const sampleFolders = [
+    { id: 'folder1', name: 'Documents', drive: 'ddownload' },
+    { id: 'folder2', name: 'Media Files', drive: 'ddownload' },
+    { id: 'folder3', name: 'Projects', drive: 'ddownload' }
+  ];
 
   // Available cloud drives
   const cloudDrives = [
@@ -46,7 +94,8 @@ const MultiDriveFileManager = () => {
       maxStorage: '2TB',
       description: 'File hosting service',
       connected: true,
-      builtin: true
+      builtin: true,
+      loginType: 'builtin'
     },
     {
       id: 'googledrive',
@@ -56,7 +105,8 @@ const MultiDriveFileManager = () => {
       maxStorage: '15GB Free / 100GB+',
       description: 'Google cloud storage',
       connected: connectedDrives.googledrive?.connected || false,
-      authUrl: '/api/drives/google/auth'
+      loginType: 'oauth',
+      loginUrl: 'https://accounts.google.com/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT&scope=https://www.googleapis.com/auth/drive&response_type=code'
     },
     {
       id: 'mega',
@@ -66,7 +116,11 @@ const MultiDriveFileManager = () => {
       maxStorage: '20GB Free / 400GB+',
       description: 'Encrypted cloud storage',
       connected: connectedDrives.mega?.connected || false,
-      authType: 'credentials'
+      loginType: 'credentials',
+      fields: [
+        { key: 'email', label: 'Email', type: 'email', required: true },
+        { key: 'password', label: 'Password', type: 'password', required: true }
+      ]
     },
     {
       id: 'terabox',
@@ -76,7 +130,8 @@ const MultiDriveFileManager = () => {
       maxStorage: '1TB Free',
       description: 'High capacity storage',
       connected: connectedDrives.terabox?.connected || false,
-      authType: 'credentials'
+      loginType: 'oauth',
+      loginUrl: 'https://www.terabox.com/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT&response_type=code'
     },
     {
       id: 'pcloud',
@@ -86,7 +141,8 @@ const MultiDriveFileManager = () => {
       maxStorage: '10GB Free / 2TB+',
       description: 'Lifetime cloud storage',
       connected: connectedDrives.pcloud?.connected || false,
-      authUrl: '/api/drives/pcloud/auth'
+      loginType: 'oauth',
+      loginUrl: 'https://my.pcloud.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT&response_type=code'
     },
     {
       id: 'icedrive',
@@ -96,7 +152,8 @@ const MultiDriveFileManager = () => {
       maxStorage: '10GB Free / 5TB+',
       description: 'Fast cloud storage',
       connected: connectedDrives.icedrive?.connected || false,
-      authUrl: '/api/drives/icedrive/auth'
+      loginType: 'oauth',
+      loginUrl: 'https://icedrive.net/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT&response_type=code'
     },
     {
       id: 'degoo',
@@ -106,7 +163,11 @@ const MultiDriveFileManager = () => {
       maxStorage: '100GB Free',
       description: 'Mobile-first storage',
       connected: connectedDrives.degoo?.connected || false,
-      authType: 'credentials'
+      loginType: 'credentials',
+      fields: [
+        { key: 'email', label: 'Email', type: 'email', required: true },
+        { key: 'password', label: 'Password', type: 'password', required: true }
+      ]
     }
   ];
 
@@ -120,97 +181,23 @@ const MultiDriveFileManager = () => {
   ];
 
   useEffect(() => {
-    loadConnectedDrives();
     loadData();
   }, [currentDrive, currentFolder]);
 
-  const loadConnectedDrives = async () => {
-    try {
-      const response = await fetch('/api/drives/connected');
-      const data = await response.json();
-      if (data.success) {
-        setConnectedDrives(data.drives);
-        setDriveStats(data.stats);
-      }
-    } catch (error) {
-      console.error('Error loading connected drives:', error);
-    }
-  };
-
-  const loadData = async () => {
+  const loadData = () => {
     setLoading(true);
     
-    try {
-      if (currentDrive === 'ddownload') {
-        await loadDDownloadData();
+    // Simulate loading delay
+    setTimeout(() => {
+      if (currentDrive === 'ddownload' || connectedDrives[currentDrive]?.connected) {
+        setFiles(sampleFiles);
+        setFolders(sampleFolders);
       } else {
-        await loadCloudDriveData();
+        setFiles([]);
+        setFolders([]);
       }
-    } catch (error) {
-      console.error('Error loading data:', error);
-    }
-    
-    setLoading(false);
-  };
-
-  const loadDDownloadData = async () => {
-    try {
-      // Load files
-      const filesResponse = await fetch(`/api/ddownload/files/list?folder_id=${currentFolder}`);
-      const filesData = await filesResponse.json();
-      
-      if (filesData.status === 200) {
-        const filesList = filesData.result?.files || [];
-        const mappedFiles = filesList.map(file => ({
-          id: file.file_code,
-          name: file.name,
-          size: file.size,
-          created_at: file.uploaded,
-          type: getFileType(file.name),
-          downloads: file.downloads || 0,
-          link: file.link,
-          preview_url: getPreviewUrl(file.file_code, file.name, file.link),
-          drive: 'ddownload'
-        }));
-        setFiles(mappedFiles);
-      }
-
-      // Load folders
-      const foldersResponse = await fetch(`/api/ddownload/folders/list?folder_id=${currentFolder}`);
-      const foldersData = await foldersResponse.json();
-      
-      if (foldersData.status === 200) {
-        const foldersList = foldersData.result?.folders || [];
-        setFolders(foldersList.map(folder => ({
-          id: folder.id,
-          name: folder.name,
-          drive: 'ddownload'
-        })));
-      }
-    } catch (error) {
-      console.error('Error loading DDownload data:', error);
-    }
-  };
-
-  const loadCloudDriveData = async () => {
-    try {
-      const response = await fetch(`/api/drives/${currentDrive}/files?folder_id=${currentFolder}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setFiles(data.files.map(file => ({
-          ...file,
-          drive: currentDrive,
-          type: getFileType(file.name)
-        })));
-        setFolders(data.folders.map(folder => ({
-          ...folder,
-          drive: currentDrive
-        })));
-      }
-    } catch (error) {
-      console.error(`Error loading ${currentDrive} data:`, error);
-    }
+      setLoading(false);
+    }, 500);
   };
 
   const connectDrive = async (driveId) => {
@@ -218,65 +205,137 @@ const MultiDriveFileManager = () => {
     if (!drive) return;
 
     setAuthInProgress(driveId);
+    setLoginMessage(`Connecting to ${drive.name}...`);
     
     try {
-      if (drive.authUrl) {
-        // OAuth flow
+      if (drive.loginType === 'oauth') {
+        // OAuth flow - open popup window
         const authWindow = window.open(
-          drive.authUrl,
-          'auth',
-          'width=600,height=700,scrollbars=yes,resizable=yes'
+          drive.loginUrl,
+          `${driveId}_auth`,
+          'width=600,height=700,scrollbars=yes,resizable=yes,left=' + 
+          (window.screen.width/2 - 300) + ',top=' + (window.screen.height/2 - 350)
         );
 
-        // Listen for auth completion
+        if (!authWindow) {
+          alert('Popup blocked! Please allow popups for this site to login.');
+          setAuthInProgress(null);
+          setLoginMessage('');
+          return;
+        }
+
+        // Simulate OAuth flow
+        setTimeout(() => {
+          if (!authWindow.closed) {
+            authWindow.close();
+          }
+          
+          // Simulate successful OAuth
+          setConnectedDrives(prev => ({
+            ...prev,
+            [driveId]: { 
+              connected: true, 
+              accessToken: 'mock_token_' + driveId,
+              email: `user@${driveId}.com`,
+              connectedAt: new Date().toISOString()
+            }
+          }));
+          
+          setDriveStats(prev => ({
+            ...prev,
+            [driveId]: {
+              fileCount: Math.floor(Math.random() * 100) + 10,
+              usedStorage: Math.floor(Math.random() * 1000000000) + 100000000
+            }
+          }));
+          
+          setAuthInProgress(null);
+          setLoginMessage('');
+          alert(`Successfully connected to ${drive.name}!`);
+        }, 2000);
+
+        // Listen for auth completion (in real app, this would be handled differently)
         const checkClosed = setInterval(() => {
           if (authWindow.closed) {
             clearInterval(checkClosed);
-            setAuthInProgress(null);
-            loadConnectedDrives(); // Refresh connection status
+            if (authInProgress === driveId) {
+              setAuthInProgress(null);
+              setLoginMessage('');
+            }
           }
         }, 1000);
 
-      } else if (drive.authType === 'credentials') {
+      } else if (drive.loginType === 'credentials') {
         // Show credentials form
         setSetupDrive(driveId);
         setShowDriveSetup(true);
         setAuthInProgress(null);
+        setLoginMessage('');
       }
     } catch (error) {
       console.error(`Error connecting to ${driveId}:`, error);
       setAuthInProgress(null);
+      setLoginMessage('');
+      alert(`Failed to connect to ${drive.name}`);
     }
   };
 
   const disconnectDrive = async (driveId) => {
-    try {
-      await fetch(`/api/drives/${driveId}/disconnect`, { method: 'POST' });
-      await loadConnectedDrives();
-    } catch (error) {
-      console.error(`Error disconnecting ${driveId}:`, error);
+    if (confirm(`Are you sure you want to disconnect from ${cloudDrives.find(d => d.id === driveId)?.name}?`)) {
+      setConnectedDrives(prev => ({
+        ...prev,
+        [driveId]: { connected: false }
+      }));
+      
+      if (currentDrive === driveId) {
+        setCurrentDrive('ddownload');
+        setCurrentFolder(0);
+        setFolderPath([{ id: 0, name: 'Home' }]);
+      }
     }
   };
 
   const submitDriveCredentials = async (credentials) => {
-    try {
-      const response = await fetch(`/api/drives/${setupDrive}/connect`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(credentials)
-      });
+    const drive = cloudDrives.find(d => d.id === setupDrive);
+    
+    if (!credentials.email || !credentials.password) {
+      alert('Please fill in all required fields');
+      return;
+    }
 
-      const data = await response.json();
-      if (data.success) {
+    try {
+      setLoginMessage(`Authenticating with ${drive.name}...`);
+      
+      // Simulate credential validation
+      setTimeout(() => {
+        // Simulate successful login
+        setConnectedDrives(prev => ({
+          ...prev,
+          [setupDrive]: { 
+            connected: true, 
+            email: credentials.email,
+            connectedAt: new Date().toISOString()
+          }
+        }));
+        
+        setDriveStats(prev => ({
+          ...prev,
+          [setupDrive]: {
+            fileCount: Math.floor(Math.random() * 100) + 10,
+            usedStorage: Math.floor(Math.random() * 1000000000) + 100000000
+          }
+        }));
+        
         setShowDriveSetup(false);
         setSetupDrive(null);
-        await loadConnectedDrives();
-      } else {
-        alert(data.message || 'Connection failed');
-      }
+        setLoginMessage('');
+        alert(`Successfully connected to ${drive.name}!`);
+      }, 1500);
+      
     } catch (error) {
       console.error('Error submitting credentials:', error);
-      alert('Connection failed');
+      alert('Authentication failed. Please check your credentials.');
+      setLoginMessage('');
     }
   };
 
@@ -288,19 +347,6 @@ const MultiDriveFileManager = () => {
     if (['mp3', 'wav', 'flac', 'm4a', 'ogg'].includes(ext)) return 'audio';
     if (['pdf', 'doc', 'docx', 'txt'].includes(ext)) return 'document';
     return 'other';
-  };
-
-  const getPreviewUrl = (fileId, filename, downloadLink) => {
-    if (!filename) return null;
-    const fileType = getFileType(filename);
-    if (fileType === 'image') {
-      if (currentDrive === 'ddownload') {
-        return downloadLink || `https://ddownload.com/${fileId}`;
-      } else {
-        return `/api/drives/${currentDrive}/preview/${fileId}`;
-      }
-    }
-    return null;
   };
 
   const getFileIcon = (filename) => {
@@ -321,63 +367,45 @@ const MultiDriveFileManager = () => {
   };
 
   const uploadFile = async (file) => {
+    if (!connectedDrives[currentDrive]?.connected) {
+      alert(`Please connect to ${cloudDrives.find(d => d.id === currentDrive)?.name} first`);
+      return;
+    }
+
     setUploading(true);
     setUploadProgress(0);
     
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('folder_id', currentFolder);
-
-      const uploadUrl = currentDrive === 'ddownload' 
-        ? '/api/ddownload/upload' 
-        : `/api/drives/${currentDrive}/upload`;
-
-      const response = await fetch(uploadUrl, {
-        method: 'POST',
-        body: formData
+    // Simulate upload progress
+    const interval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setUploading(false);
+          
+          // Add uploaded file to the list
+          const newFile = {
+            id: 'uploaded_' + Date.now(),
+            name: file.name,
+            size: file.size,
+            created_at: new Date().toISOString(),
+            type: getFileType(file.name),
+            downloads: 0,
+            link: '#',
+            drive: currentDrive
+          };
+          
+          setFiles(prev => [newFile, ...prev]);
+          return 0;
+        }
+        return prev + 10;
       });
-
-      const data = await response.json();
-      if (data.success) {
-        await loadData();
-      }
-    } catch (error) {
-      console.error('Upload error:', error);
-    } finally {
-      setUploading(false);
-      setUploadProgress(0);
-    }
+    }, 200);
   };
 
   // Drive Setup Modal Component
   const DriveSetupModal = () => {
     const [credentials, setCredentials] = useState({});
     const drive = cloudDrives.find(d => d.id === setupDrive);
-
-    const getCredentialFields = (driveId) => {
-      switch (driveId) {
-        case 'mega':
-          return [
-            { key: 'email', label: 'Email', type: 'email', required: true },
-            { key: 'password', label: 'Password', type: 'password', required: true }
-          ];
-        case 'terabox':
-          return [
-            { key: 'email', label: 'Email/Phone', type: 'text', required: true },
-            { key: 'password', label: 'Password', type: 'password', required: true }
-          ];
-        case 'degoo':
-          return [
-            { key: 'email', label: 'Email', type: 'email', required: true },
-            { key: 'password', label: 'Password', type: 'password', required: true }
-          ];
-        default:
-          return [];
-      }
-    };
-
-    const fields = getCredentialFields(setupDrive);
 
     return (
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -388,45 +416,71 @@ const MultiDriveFileManager = () => {
               <h3 className="text-xl font-bold">Connect {drive?.name}</h3>
             </div>
             <button
-              onClick={() => setShowDriveSetup(false)}
+              onClick={() => {
+                setShowDriveSetup(false);
+                setSetupDrive(null);
+              }}
               className="p-2 hover:bg-white/10 rounded-full transition-colors"
             >
               <X size={20} />
             </button>
           </div>
 
+          <div className="text-center mb-6">
+            <p className="text-gray-400">Enter your {drive?.name} credentials to connect your account</p>
+          </div>
+
           <div className="space-y-4 mb-6">
-            {fields.map((field) => (
+            {drive?.fields?.map((field) => (
               <div key={field.key}>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   {field.label}
                 </label>
-                <input
-                  type={field.type}
-                  value={credentials[field.key] || ''}
-                  onChange={(e) => setCredentials(prev => ({
-                    ...prev,
-                    [field.key]: e.target.value
-                  }))}
-                  className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-                  required={field.required}
-                />
+                <div className="relative">
+                  <input
+                    type={field.type}
+                    value={credentials[field.key] || ''}
+                    onChange={(e) => setCredentials(prev => ({
+                      ...prev,
+                      [field.key]: e.target.value
+                    }))}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 pr-10 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                    placeholder={`Enter your ${field.label.toLowerCase()}`}
+                    required={field.required}
+                  />
+                  {field.type === 'email' && (
+                    <Mail className="absolute right-3 top-3 text-gray-400" size={20} />
+                  )}
+                </div>
               </div>
             ))}
           </div>
 
+          {loginMessage && (
+            <div className="mb-4 p-3 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+              <div className="flex items-center space-x-2 text-blue-400">
+                <RefreshCw className="animate-spin" size={16} />
+                <span className="text-sm">{loginMessage}</span>
+              </div>
+            </div>
+          )}
+
           <div className="flex space-x-3">
             <button
-              onClick={() => setShowDriveSetup(false)}
+              onClick={() => {
+                setShowDriveSetup(false);
+                setSetupDrive(null);
+              }}
               className="flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded-xl font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={() => submitDriveCredentials(credentials)}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-medium transition-colors"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-medium transition-colors flex items-center justify-center space-x-2"
             >
-              Connect
+              <LogIn size={16} />
+              <span>Connect</span>
             </button>
           </div>
         </div>
@@ -476,17 +530,28 @@ const MultiDriveFileManager = () => {
           </div>
         </div>
 
+        {/* Login Status Message */}
+        {loginMessage && (
+          <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/30 rounded-2xl">
+            <div className="flex items-center space-x-3 text-blue-400">
+              <RefreshCw className="animate-spin" size={20} />
+              <span>{loginMessage}</span>
+            </div>
+          </div>
+        )}
+
         {/* Drive Selection */}
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4 flex items-center">
             <HardDrive className="mr-2 text-blue-400" size={20} />
-            Connected Drives
+            Available Drives
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {cloudDrives.map((drive) => {
               const DriveIcon = drive.icon;
               const isActive = currentDrive === drive.id;
-              const isConnected = drive.connected;
+              const isConnected = drive.connected || connectedDrives[drive.id]?.connected;
+              const isAuthenticating = authInProgress === drive.id;
               
               return (
                 <div 
@@ -497,7 +562,7 @@ const MultiDriveFileManager = () => {
                       : 'border-white/10 hover:bg-white/10'
                   }`}
                   onClick={() => {
-                    if (isConnected) {
+                    if (isConnected && !isAuthenticating) {
                       setCurrentDrive(drive.id);
                       setCurrentFolder(0);
                       setFolderPath([{ id: 0, name: 'Home' }]);
@@ -512,18 +577,19 @@ const MultiDriveFileManager = () => {
                     <div className="flex items-center space-x-2">
                       {isConnected ? (
                         <>
-                          <div className={`w-2 h-2 rounded-full bg-green-500`}></div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!drive.builtin) {
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                          {!drive.builtin && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 disconnectDrive(drive.id);
-                              }
-                            }}
-                            className="p-1 hover:bg-white/10 rounded-full transition-colors"
-                          >
-                            {!drive.builtin && <LogOut size={14} />}
-                          </button>
+                              }}
+                              className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                              title="Disconnect"
+                            >
+                              <LogOut size={14} className="text-red-400" />
+                            </button>
+                          )}
                         </>
                       ) : (
                         <button
@@ -531,13 +597,14 @@ const MultiDriveFileManager = () => {
                             e.stopPropagation();
                             connectDrive(drive.id);
                           }}
-                          disabled={authInProgress === drive.id}
-                          className="p-1 hover:bg-white/10 rounded-full transition-colors"
+                          disabled={isAuthenticating}
+                          className="p-2 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors disabled:opacity-50"
+                          title="Connect"
                         >
-                          {authInProgress === drive.id ? (
-                            <RefreshCw size={14} className="animate-spin" />
+                          {isAuthenticating ? (
+                            <RefreshCw size={14} className="animate-spin text-white" />
                           ) : (
-                            <LogIn size={14} />
+                            <LogIn size={14} className="text-white" />
                           )}
                         </button>
                       )}
@@ -546,9 +613,20 @@ const MultiDriveFileManager = () => {
                   
                   <h4 className="font-semibold text-white mb-1">{drive.name}</h4>
                   <p className="text-xs text-gray-400 mb-2">{drive.description}</p>
-                  <div className="text-xs text-gray-500">
-                    {drive.maxStorage}
-                  </div>
+                  
+                  {isConnected ? (
+                    <div className="text-xs space-y-1">
+                      <div className="text-green-400 font-medium">✓ Connected</div>
+                      {connectedDrives[drive.id]?.email && (
+                        <div className="text-gray-500">{connectedDrives[drive.id].email}</div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-xs space-y-1">
+                      <div className="text-gray-500">{drive.maxStorage}</div>
+                      <div className="text-yellow-400">Click to connect</div>
+                    </div>
+                  )}
                   
                   {isConnected && driveStats[drive.id] && (
                     <div className="mt-3 pt-3 border-t border-white/10">
@@ -565,11 +643,11 @@ const MultiDriveFileManager = () => {
         </div>
 
         {/* Current Drive Info */}
-        {currentDriveInfo && currentDriveInfo.connected && (
+        {currentDriveInfo && (connectedDrives[currentDrive]?.connected || currentDriveInfo.builtin) && (
           <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/10 mb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <React.createElement(currentDriveInfo.icon, { 
+                {React.createElement(currentDriveInfo.icon, { 
                   size: 24, 
                   className: `text-${currentDriveInfo.color}-400` 
                 })}
@@ -631,7 +709,7 @@ const MultiDriveFileManager = () => {
         </div>
 
         {/* Upload Area */}
-        {currentDriveInfo && currentDriveInfo.connected && (
+        {currentDriveInfo && (connectedDrives[currentDrive]?.connected || currentDriveInfo.builtin) && (
           <div 
             className={`border-2 border-dashed rounded-3xl p-8 text-center transition-all ${
               uploading 
@@ -680,6 +758,22 @@ const MultiDriveFileManager = () => {
             )}
           </div>
         )}
+
+        {/* Not Connected Message */}
+        {currentDriveInfo && !connectedDrives[currentDrive]?.connected && !currentDriveInfo.builtin && (
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-3xl p-8 text-center">
+            <AlertCircle className="mx-auto mb-4 text-yellow-400" size={48} />
+            <h3 className="text-xl font-semibold mb-2 text-yellow-400">Drive Not Connected</h3>
+            <p className="text-gray-400 mb-4">Please connect to {currentDriveInfo.name} to upload and manage files</p>
+            <button
+              onClick={() => connectDrive(currentDrive)}
+              className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-2xl font-semibold transition-colors inline-flex items-center space-x-2"
+            >
+              <LogIn size={20} />
+              <span>Connect Now</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Files and Folders Display */}
@@ -723,7 +817,7 @@ const MultiDriveFileManager = () => {
               <FileText className="mx-auto text-gray-500 mb-4" size={64} />
               <h3 className="text-2xl font-semibold text-gray-400 mb-2">No files found</h3>
               <p className="text-gray-500">
-                {currentDriveInfo && currentDriveInfo.connected 
+                {currentDriveInfo && (connectedDrives[currentDrive]?.connected || currentDriveInfo.builtin)
                   ? "Upload some files or create folders" 
                   : "Connect a drive to start managing files"
                 }
@@ -737,41 +831,12 @@ const MultiDriveFileManager = () => {
               {files.map((file) => {
                 const FileIcon = getFileIcon(file.name);
                 const isFavorite = favoriteFiles.has(file.id);
-                const hasPreview = file.type === 'image' && file.preview_url;
                 
                 if (viewMode === 'grid') {
                   return (
                     <div key={file.id} className="bg-white/5 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 hover:bg-white/10 transition-all group">
-                      <div 
-                        className="aspect-square bg-gray-800/50 flex items-center justify-center relative cursor-pointer"
-                        onClick={() => {
-                          if (hasPreview) {
-                            setShowImagePreview(file);
-                          }
-                        }}
-                      >
-                        {hasPreview ? (
-                          <div className="w-full h-full relative">
-                            <img 
-                              src={file.preview_url}
-                              alt={file.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              loading="lazy"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                                e.target.nextSibling.style.display = 'flex';
-                              }}
-                            />
-                            <div className="hidden w-full h-full items-center justify-center bg-gray-800">
-                              <FileIcon size={48} className="text-gray-400" />
-                            </div>
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                              <Eye size={32} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            </div>
-                          </div>
-                        ) : (
-                          <FileIcon size={48} className="text-gray-400 group-hover:text-blue-400 transition-colors" />
-                        )}
+                      <div className="aspect-square bg-gray-800/50 flex items-center justify-center relative">
+                        <FileIcon size={48} className="text-gray-400 group-hover:text-blue-400 transition-colors" />
                         
                         {/* File size badge */}
                         <div className="absolute top-2 right-2">
@@ -819,8 +884,8 @@ const MultiDriveFileManager = () => {
                         <div className="flex items-center space-x-2">
                           <button 
                             onClick={() => {
-                              const shareLink = file.link || `/api/drives/${currentDrive}/download/${file.id}`;
-                              navigator.clipboard.writeText(shareLink);
+                              navigator.clipboard.writeText(file.link || `#shared-${file.id}`);
+                              alert('Link copied to clipboard!');
                             }}
                             className="flex-1 bg-blue-600 hover:bg-blue-700 py-2 px-3 rounded-lg text-xs font-medium transition-colors flex items-center justify-center space-x-1"
                           >
@@ -836,18 +901,7 @@ const MultiDriveFileManager = () => {
                           <button
                             onClick={() => {
                               if (confirm('Delete this file?')) {
-                                // Handle delete based on drive
-                                const deleteUrl = currentDrive === 'ddownload' 
-                                  ? '/api/ddownload/files/delete' 
-                                  : `/api/drives/${currentDrive}/delete/${file.id}`;
-                                
-                                fetch(deleteUrl, {
-                                  method: 'POST',
-                                  headers: { 'Content-Type': 'application/json' },
-                                  body: JSON.stringify({ file_code: file.id })
-                                }).then(() => {
-                                  setFiles(prev => prev.filter(f => f.id !== file.id));
-                                });
+                                setFiles(prev => prev.filter(f => f.id !== file.id));
                               }
                             }}
                             className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
@@ -863,27 +917,8 @@ const MultiDriveFileManager = () => {
                   return (
                     <div key={file.id} className="bg-white/5 backdrop-blur-xl rounded-2xl p-4 flex items-center justify-between border border-white/10 hover:bg-white/10 transition-all">
                       <div className="flex items-center space-x-4">
-                        <div 
-                          className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center overflow-hidden cursor-pointer"
-                          onClick={() => {
-                            if (hasPreview) {
-                              setShowImagePreview(file);
-                            }
-                          }}
-                        >
-                          {hasPreview ? (
-                            <img 
-                              src={file.preview_url} 
-                              alt={file.name}
-                              className="w-full h-full object-cover hover:scale-110 transition-transform"
-                              loading="lazy"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                                e.target.nextSibling.style.display = 'flex';
-                              }}
-                            />
-                          ) : null}
-                          <FileIcon size={20} className="text-blue-400" style={{display: hasPreview ? 'none' : 'flex'}} />
+                        <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
+                          <FileIcon size={20} className="text-blue-400" />
                         </div>
                         
                         <div className="flex-1">
@@ -904,7 +939,6 @@ const MultiDriveFileManager = () => {
                                 <span>{file.downloads} downloads</span>
                               </>
                             )}
-                            {hasPreview && <span className="text-blue-400">• Preview available</span>}
                           </div>
                         </div>
                       </div>
@@ -929,8 +963,8 @@ const MultiDriveFileManager = () => {
                         
                         <button 
                           onClick={() => {
-                            const shareLink = file.link || `/api/drives/${currentDrive}/download/${file.id}`;
-                            navigator.clipboard.writeText(shareLink);
+                            navigator.clipboard.writeText(file.link || `#shared-${file.id}`);
+                            alert('Link copied to clipboard!');
                           }}
                           className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center space-x-2"
                         >
@@ -948,17 +982,7 @@ const MultiDriveFileManager = () => {
                         <button
                           onClick={() => {
                             if (confirm('Delete this file?')) {
-                              const deleteUrl = currentDrive === 'ddownload' 
-                                ? '/api/ddownload/files/delete' 
-                                : `/api/drives/${currentDrive}/delete/${file.id}`;
-                              
-                              fetch(deleteUrl, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ file_code: file.id })
-                              }).then(() => {
-                                setFiles(prev => prev.filter(f => f.id !== file.id));
-                              });
+                              setFiles(prev => prev.filter(f => f.id !== file.id));
                             }
                           }}
                           className="p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors"
@@ -974,92 +998,6 @@ const MultiDriveFileManager = () => {
           )}
         </div>
       </div>
-
-      {/* Image Preview Modal */}
-      {showImagePreview && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="relative max-w-6xl max-h-full bg-gray-900 rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
-            <div className="flex items-center justify-between p-4 bg-gray-800/80 backdrop-blur-sm border-b border-white/10">
-              <div>
-                <h3 className="text-lg font-semibold text-white">{showImagePreview.name}</h3>
-                <p className="text-sm text-gray-400">{formatFileSize(showImagePreview.size)} • {currentDriveInfo?.name}</p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => {
-                    const shareLink = showImagePreview.link || `/api/drives/${currentDrive}/download/${showImagePreview.id}`;
-                    navigator.clipboard.writeText(shareLink);
-                  }}
-                  className="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                >
-                  <Share2 size={16} />
-                </button>
-                <button
-                  onClick={() => {
-                    const newFavorites = new Set(favoriteFiles);
-                    if (newFavorites.has(showImagePreview.id)) {
-                      newFavorites.delete(showImagePreview.id);
-                    } else {
-                      newFavorites.add(showImagePreview.id);
-                    }
-                    setFavoriteFiles(newFavorites);
-                  }}
-                  className={`p-2 rounded-lg transition-colors ${
-                    favoriteFiles.has(showImagePreview.id) 
-                      ? 'bg-yellow-500/20 text-yellow-400' 
-                      : 'bg-white/10 hover:bg-white/20 text-gray-400'
-                  }`}
-                >
-                  {favoriteFiles.has(showImagePreview.id) ? 
-                    <Star size={16} fill="currentColor" /> : 
-                    <Star size={16} />
-                  }
-                </button>
-                <button
-                  onClick={() => setShowImagePreview(null)}
-                  className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors text-gray-300 hover:text-white"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-            </div>
-
-            <div className="relative flex items-center justify-center min-h-[60vh] max-h-[80vh] bg-black">
-              <img
-                src={showImagePreview.preview_url}
-                alt={showImagePreview.name}
-                className="max-w-full max-h-full object-contain"
-                style={{ maxHeight: '70vh' }}
-                onError={() => setShowImagePreview(null)}
-              />
-            </div>
-
-            <div className="p-4 bg-gray-800/80 backdrop-blur-sm border-t border-white/10 flex items-center justify-between">
-              <div className="flex items-center space-x-4 text-sm text-gray-400">
-                <span>Created: {new Date(showImagePreview.created_at).toLocaleDateString()}</span>
-                {showImagePreview.downloads && (
-                  <>
-                    <span>•</span>
-                    <span>{showImagePreview.downloads} downloads</span>
-                  </>
-                )}
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => {
-                    const downloadUrl = showImagePreview.link || `/api/drives/${currentDrive}/download/${showImagePreview.id}`;
-                    window.open(downloadUrl, '_blank');
-                  }}
-                  className="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
-                >
-                  <Download size={16} />
-                  <span>Download</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* File Info Modal */}
       {showFileInfo && (
@@ -1077,7 +1015,10 @@ const MultiDriveFileManager = () => {
             
             <div className="space-y-4">
               <div className="flex items-center space-x-4 p-4 bg-white/5 rounded-2xl">
-                {React.createElement(getFileIcon(showFileInfo.name), { size: 48, className: "text-blue-400" })}
+                {React.createElement(getFileIcon(showFileInfo.name), { 
+                  size: 48, 
+                  className: "text-blue-400" 
+                })}
                 <div className="flex-1">
                   <h4 className="text-lg font-semibold text-white">{showFileInfo.name}</h4>
                   <p className="text-gray-400">{getFileType(showFileInfo.name).charAt(0).toUpperCase() + getFileType(showFileInfo.name).slice(1)} File</p>
@@ -1106,8 +1047,8 @@ const MultiDriveFileManager = () => {
               <div className="flex space-x-3 pt-4">
                 <button
                   onClick={() => {
-                    const shareLink = showFileInfo.link || `/api/drives/${currentDrive}/download/${showFileInfo.id}`;
-                    navigator.clipboard.writeText(shareLink);
+                    navigator.clipboard.writeText(showFileInfo.link || `#shared-${showFileInfo.id}`);
+                    alert('Link copied to clipboard!');
                   }}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-medium transition-colors flex items-center justify-center space-x-2"
                 >
@@ -1116,8 +1057,7 @@ const MultiDriveFileManager = () => {
                 </button>
                 <button
                   onClick={() => {
-                    const downloadUrl = showFileInfo.link || `/api/drives/${currentDrive}/download/${showFileInfo.id}`;
-                    window.open(downloadUrl, '_blank');
+                    window.open(showFileInfo.link || `#download-${showFileInfo.id}`, '_blank');
                   }}
                   className="flex-1 bg-green-600 hover:bg-green-700 py-3 rounded-xl font-medium transition-colors flex items-center justify-center space-x-2"
                 >
