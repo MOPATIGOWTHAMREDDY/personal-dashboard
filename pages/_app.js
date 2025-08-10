@@ -16,7 +16,7 @@ function MyApp({ Component, pageProps }) {
         
         {/* PWA Manifest */}
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="https://img.icons8.com/?size=100&id=vl7tZspv3Ny6&format=png&color=000000" />
+        <link rel="apple-touch-icon" href="https://img.icons8.com/?size=100&id=0a0Pgc8Lxvoe&format=png&color=000000" />
         <link rel="shortcut icon" href="https://img.icons8.com/?size=100&id=vktzxU8bOVMG&format=png&color=000000" />
         
         {/* SEO */}

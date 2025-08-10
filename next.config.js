@@ -1,55 +1,58 @@
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
-});
-
-module.exports = withPWA({
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  swcMinify: true,
   images: {
     domains: [
+      // Movie images
       'image.tmdb.org',
-      'images.unsplash.com',
+      
+      // News sources
+      'sportshub.cbsistatic.com',
+      'nypost.com',
+      'images.wsj.net',
+      'cdn.cnn.com',
+      'static01.nyt.com',
+      'www.washingtonpost.com',
+      'media.cnn.com',
+      'cloudfront-us-east-1.images.arcpublishing.com',
+      
+      // Placeholder and fallback images
       'via.placeholder.com',
-      'i.scdn.co',
-      'img.icons8.com'
+      'images.unsplash.com',
+      'picsum.photos',
+      
+      // Add more domains as needed
     ],
-  },
-  reactStrictMode: true,
-  
-  // Fix Cross-Origin-Opener-Policy issues with OAuth popups
-  async headers() {
-    return [
+    // Optional: Allow external patterns for more flexibility
+    remotePatterns: [
       {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups'
-          },
-          {
-            key: 'Cross-Origin-Embedder-Policy', 
-            value: 'require-corp'
-          }
-        ],
+        protocol: 'https',
+        hostname: '**.tmdb.org',
       },
       {
-        source: '/api/:path*',
-        headers: [
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: '*'
-          },
-          {
-            key: 'Access-Control-Allow-Methods',
-            value: 'GET, POST, PUT, DELETE, OPTIONS'
-          },
-          {
-            key: 'Access-Control-Allow-Headers',
-            value: 'Content-Type, Authorization'
-          }
-        ]
-      }
-    ];
-  },
-});
+        protocol: 'https',
+        hostname: '**.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.placeholder.com',
+      },
+      // News sources patterns
+      {
+        protocol: 'https',
+        hostname: '**.cbsistatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.nypost.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.wsj.net',
+      },
+    ]
+  }
+}
+
+module.exports = nextConfig
