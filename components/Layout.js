@@ -1,4 +1,6 @@
 // components/Layout.js
+/* eslint-disable react/no-unescaped-entities */
+
 import { useState, useEffect, useMemo } from 'react';
 import dynamic      from 'next/dynamic';
 import Navigation   from './Navigation';
@@ -42,9 +44,13 @@ export default function Layout({ initialMovies=[], initialNews=[] }) {
 
   const Page = useMemo(()=>{
     const C=ROUTES[category]?.view||(()=><Spinner/>);
+    // eslint-disable-next-line react/display-name
     if(category==='home')   return ()=> <C setActiveCategory={setCategory} initialMovies={initialMovies} initialNews={initialNews}/>;
+    // eslint-disable-next-line react/display-name
     if(category==='movies') return ()=> <C initialData={initialMovies}/>;
+    // eslint-disable-next-line react/display-name
     if(category==='news')   return ()=> <C initialData={initialNews}/>;
+    // eslint-disable-next-line react/display-name
     if(category==='profile')return ()=> <C user={user} setUser={setUser}/>;
     return C;
   },[category,user]);

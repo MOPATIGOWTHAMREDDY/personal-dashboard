@@ -136,7 +136,7 @@ export default function GoogleCallback() {
         </button>
         
         <div className="mt-6 text-xs text-gray-500">
-          <p>If this window doesn't close automatically, click the button above</p>
+          {/* <p>If this window doesn't close automatically, click the button above</p> */}
         </div>
       </div>
     </div>

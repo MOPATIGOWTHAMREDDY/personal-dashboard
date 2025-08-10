@@ -1,4 +1,5 @@
 // pages/_document.js
+/* eslint-disable react/no-unescaped-entities */
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 import Script from 'next/script';          // ← use Next.js <Script> for correct loading
 

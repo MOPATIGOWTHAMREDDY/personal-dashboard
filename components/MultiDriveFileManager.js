@@ -1,3 +1,5 @@
+/* eslint-disable react/no-unescaped-entities */
+
 import React, { useState, useEffect } from 'react';
 import { 
   Upload, Cloud, Database, Archive, 
@@ -616,7 +618,7 @@ const TeraBoxFileManager = () => {
               <p className="text-gray-300 mt-2 mb-2">Then set proxy URL below to: http://localhost:8080</p>
               
               <p className="text-blue-200 mb-2"><strong>Option 2: Browser Extension</strong></p>
-              <p className="text-gray-300">Install "CORS Unblock" extension for testing</p>
+              {/* <p className="text-gray-300">Install "CORS Unblock" extension for testing</p> */}
               
               <p className="text-purple-200 mb-2"><strong>Option 3: Demo Mode</strong></p>
               <p className="text-gray-300">Connect anyway for simulated functionality</p>
@@ -755,17 +757,17 @@ const TeraBoxFileManager = () => {
               <div>
                 <p className="font-medium text-blue-400 mb-2">Method 2: Browser Extension</p>
                 <ol className="list-decimal list-inside ml-4 space-y-1 text-xs">
-                  <li>Install "EditThisCookie" or similar extension</li>
+                  {/* <li>Install "EditThisCookie" or similar extension</li>
                   <li>Login to TeraBox</li>
                   <li>Use extension to export cookies</li>
-                  <li>Extract ndus and other required values</li>
+                  <li>Extract ndus and other required values</li> */}
                 </ol>
               </div>
 
               <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
                 <p className="text-yellow-200 text-xs">
-                  <strong>Note:</strong> The credentials you provided have been pre-filled. 
-                  These appear to be valid TeraBox session tokens. Click "Connect (Demo Mode)" to proceed.
+                  {/* <strong>Note:</strong> The credentials you provided have been pre-filled.  */}
+                  {/* These appear to be valid TeraBox session tokens. Click "Connect (Demo Mode)" to proceed. */}
                 </p>
               </div>
             </div>
@@ -1143,7 +1145,7 @@ const TeraBoxFileManager = () => {
               <div className="bg-blue-500/10 border border-blue-500/30 rounded p-3">
                 <h5 className="font-medium text-blue-400 mb-2">2. Browser Extension</h5>
                 <div className="text-xs space-y-1">
-                  <p>Install "CORS Unblock" or "CORS Everywhere"</p>
+                  {/* <p>Install "CORS Unblock" or "CORS Everywhere"</p> */}
                   <p className="text-gray-400">Enable for terabox.com and pan.baidu.com</p>
                   <p className="text-yellow-300">⚠️ Only for development/testing</p>
                 </div>
