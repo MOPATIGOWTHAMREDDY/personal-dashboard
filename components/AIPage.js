@@ -516,11 +516,11 @@ export default function EnhancedAIPage({ onNavigateHome, setActiveCategory }) {
   };
 
   return (
-    <div className="fixed inset-0 flex h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white z-50">
+    <div className="flex h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
       
       {/* Chat List Sidebar */}
       {showChatList && (
-        <div className="w-80 bg-black/95 backdrop-blur-xl border-r border-white/20 flex flex-col">
+        <div className="w-80 bg-black/95 backdrop-blur-xl border-r border-white/20 flex flex-col z-50">
           {/* Sidebar Header */}
           <div className="p-4 border-b border-white/10">
             <div className="flex items-center justify-between mb-4">
@@ -611,23 +611,16 @@ export default function EnhancedAIPage({ onNavigateHome, setActiveCategory }) {
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
-        {/* Mobile Header - Adjusted for notch */}
-        <header className="bg-black/40 backdrop-blur-xl border-b border-white/10 pt-12 pb-4 px-4">
+        {/* Mobile Header - Simplified for layout integration */}
+        <header className="bg-black/40 backdrop-blur-xl border-b border-white/10 p-4">
           <div className="flex items-center justify-between mb-3">
-            {/* Left Side - Menu + Home + Title */}
+            {/* Left Side - Menu + Title */}
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowChatList(!showChatList)}
                 className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 
                          transition-colors">
                 <Menu size={20} className="text-gray-300" />
-              </button>
-              
-              <button
-                onClick={handleNavigateHome}
-                className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 
-                         transition-colors">
-                <Home size={20} className="text-gray-300" />
               </button>
               
               <div>
