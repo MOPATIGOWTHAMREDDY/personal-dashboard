@@ -3,8 +3,8 @@ import {
   Home, Search, Film, TrendingUp, Newspaper, Brain, 
   DollarSign, StickyNote, HardDrive, Trophy, User, 
   Gamepad2, X, Send, Loader2, Bot, CheckCircle, Copy,
-  MessageCircle, ArrowRight, Zap, Globe, Target, Star, Clock, Play,
-  Flame
+  MessageCircle, ArrowRight, Zap, Globe, Target, Star,
+  Flame, Clock, Play
 } from 'lucide-react';
 
 export default function Navigation({ active, setActive }) {
@@ -114,7 +114,7 @@ export default function Navigation({ active, setActive }) {
     setShowAISearch(needsAI);
   };
 
-  // AI search function - FIXED SYNTAX ERROR
+  // AI search function
   const handleAISearch = async () => {
     if (!searchQuery.trim()) return;
     
@@ -129,7 +129,6 @@ export default function Navigation({ active, setActive }) {
           { model: 'openrouter:openai/gpt-4o', stream: true }
         );
 
-        // FIXED: Changed "the chunk" to "const chunk"
         for await (const chunk of response) {
           if (chunk?.text) {
             fullResponse += chunk.text;
@@ -180,9 +179,14 @@ export default function Navigation({ active, setActive }) {
         />
       )}
 
-      {/* Home Panel - Full Glassmorphic iOS Style */}
+      {/* Home Panel - FIXED for notch */}
       {isHomeExpanded && (
-        <div className="nav-panel fixed bottom-24 left-4 right-4 z-50">
+        <div 
+          className="nav-panel fixed left-4 right-4 z-50"
+          style={{ 
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)'
+          }}
+        >
           <div 
             className="bg-white/10 border border-white/20 rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-300"
             style={{ backdropFilter: 'blur(40px)' }}
@@ -247,9 +251,14 @@ export default function Navigation({ active, setActive }) {
         </div>
       )}
 
-      {/* Search Panel with Trending Suggestions */}
+      {/* Search Panel - FIXED for notch */}
       {isSearchExpanded && (
-        <div className="nav-panel fixed bottom-24 left-4 right-4 z-50">
+        <div 
+          className="nav-panel fixed left-4 right-4 z-50"
+          style={{ 
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)'
+          }}
+        >
           <div 
             className="bg-white/10 border border-white/20 rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-300"
             style={{ backdropFilter: 'blur(40px)' }}
@@ -454,7 +463,7 @@ export default function Navigation({ active, setActive }) {
                           <Loader2 size={16} className="animate-spin text-purple-400" />
                           <span className="text-purple-300 font-medium">AI is processing...</span>
                         </div>
-                        <p className="text-purple-200/60 text-sm mt-1">Query: &ldquo;{searchQuery}&ldquo;</p>
+                        <p className="text-purple-200/60 text-sm mt-1">Query: &ldquo;{searchQuery}&quot;</p>
                       </div>
                     </div>
                   )}
@@ -530,8 +539,13 @@ export default function Navigation({ active, setActive }) {
         </div>
       )}
 
-      {/* iOS-Style Pure Glassmorphic Navigation Bar - Only Icons */}
-      <div className="fixed bottom-0 left-0 right-0 z-50">
+      {/* iOS-Style Navigation Bar - FIXED for notch */}
+      <div 
+        className="fixed bottom-0 left-0 right-0 z-50"
+        style={{ 
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+        }}
+      >
         <div className="mx-4 mb-4">
           <div 
             className="bg-white/10 border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
@@ -550,7 +564,7 @@ export default function Navigation({ active, setActive }) {
                     : 'text-white/80 hover:bg-white/10 border-r border-white/20'
                 }`}
               >
-                <Home size={28} className="transition-colors" strokeWidth={2.5} />
+                <Home size={22} className="transition-colors" strokeWidth={2.5} />
               </button>
 
               {/* Search Button - Takes Half Space */}
@@ -565,7 +579,7 @@ export default function Navigation({ active, setActive }) {
                     : 'text-white/80 hover:bg-white/10'
                 }`}
               >
-                <Search size={28} className="transition-colors" strokeWidth={2.5} />
+                <Search size={22} className="transition-colors" strokeWidth={2.5} />
               </button>
             </div>
           </div>
