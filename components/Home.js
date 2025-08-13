@@ -101,7 +101,7 @@ const THEMES = {
 
 export default function Home({ setActiveCategory, initialMovies = [], initialNews = [] }) {
   const [currentTheme, setCurrentTheme] = useState('glassmorphic');
-  const [now, setNow] = useState(new Date('2025-08-13T19:15:04Z'));// Using current UTC time
+  const [now, setNow] = useState(new Date('2025-08-13T19:35:11Z'));
   const [movies, setMovies] = useState(initialMovies);
   const [news, setNews] = useState(initialNews);
   const [loading, setLoading] = useState(false);
@@ -110,9 +110,8 @@ export default function Home({ setActiveCategory, initialMovies = [], initialNew
   const theme = THEMES[currentTheme];
 
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 60000); // Update every minute instead of every second
+    const timer = setInterval(() => setNow(new Date()), 60000);
     
-    // Only fetch if no initial data
     if (initialMovies.length === 0 && initialNews.length === 0) {
       fetchAll();
     }
@@ -152,7 +151,7 @@ export default function Home({ setActiveCategory, initialMovies = [], initialNew
     try {
       const res = await fetch(`https://newsapi.org/v2/top-headlines?country=us&category=general&pageSize=6&apiKey=${key}`);
       const data = await res.json();
-      setNews(data.articles?.slice(0, 6) ?? []); // Get more news for grid
+      setNews(data.articles?.slice(0, 6) ?? []);
     } catch (error) {
       console.error('News fetch error:', error);
       setNews([]);
@@ -180,9 +179,9 @@ export default function Home({ setActiveCategory, initialMovies = [], initialNew
   return (
     <div className={`min-h-screen ${theme.bg} ${theme.text} relative overflow-hidden`}>
       
-      {/* Theme Selector */}
-      <div className="fixed top-4 right-4 z-50">
-        <div className="relative">
+      {/* Theme Selector - FIXED for notch */}
+      <div className="fixed top-0 right-4 z-50" style={{ paddingTop: 'env(safe-area-inset-top, 16px)' }}>
+        <div className="relative pt-4">
           <button
             onClick={() => setShowThemeSelector(!showThemeSelector)}
             className={`p-3 ${theme.cardBg} ${theme.cardBorder} border rounded-2xl ${theme.cardHover} transition-all duration-200 shadow-lg`}
@@ -222,8 +221,13 @@ export default function Home({ setActiveCategory, initialMovies = [], initialNew
         </div>
       </div>
 
-      {/* Fixed height container to prevent infinite scroll */}
-      <div className="h-screen overflow-y-auto pb-32 pt-6">
+      {/* Fixed height container with proper safe area - FIXED for notch */}
+      <div 
+        className="h-screen overflow-y-auto pb-32"
+        style={{ 
+          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 24px)'
+        }}
+      >
 
         {/* Content Cards - Only AI, Movies, News */}
         <section className="px-6 mb-8">
