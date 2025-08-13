@@ -1,8 +1,62 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
+  
+  // Custom headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow, nosnippet, noarchive, noimageindex',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'no-referrer',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ];
+  },
+
+  // Proxy external requests
+  async rewrites() {
+    return [
+      // Proxy TMDB API requests
+      {
+        source: '/api/tmdb/:path*',
+        destination: 'https://api.themoviedb.org/3/:path*',
+      },
+      // Proxy image requests
+      {
+        source: '/api/images/:path*',
+        destination: 'https://image.tmdb.org/t/p/:path*',
+      },
+      // Proxy GoodPlayer
+      {
+        source: '/api/player/:path*',
+        destination: 'https://goodplayer.netlify.app/:path*',
+      },
+    ];
+  },
+
+  // Image optimization settings
   images: {
+    unoptimized: true,
     domains: [
       // Movie images
       'image.tmdb.org',
@@ -21,10 +75,10 @@ const nextConfig = {
       'via.placeholder.com',
       'images.unsplash.com',
       'picsum.photos',
-      
-      // Add more domains as needed
+      'icons8.com',
+      'img.icons8.com', 
+      's.yimg.com'
     ],
-    // Optional: Allow external patterns for more flexibility
     remotePatterns: [
       {
         protocol: 'https',
@@ -38,7 +92,6 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.placeholder.com',
       },
-      // News sources patterns
       {
         protocol: 'https',
         hostname: '**.cbsistatic.com',
@@ -51,8 +104,16 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.wsj.net',
       },
-    ]
-  }
-}
+      {
+        protocol: 'https',
+        hostname: 'image.tmdb.org',
+        pathname: '/t/p/**',
+      },
+    ],
+  },
+  
+  // Optional settings
+  trailingSlash: false,
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
