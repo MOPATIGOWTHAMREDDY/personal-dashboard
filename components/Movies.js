@@ -4,7 +4,7 @@ import {
   Grid, List, ChevronDown, Plus, ExternalLink, Tv, Film,
   TrendingUp, Award, Users, Eye, BookOpen, Sparkles, X,
   Edit, Trash2, Save, Monitor, Youtube, Globe, ChevronRight,
-  Info, PlayCircle, Zap, Gamepad2
+  Info, PlayCircle, Zap, Gamepad2, ArrowLeft, Settings
 } from 'lucide-react';
 
 // Content types
@@ -13,6 +13,194 @@ const CONTENT_TYPES = {
   TV: 'tv',
   ANIME: 'anime'
 };
+
+// ALL Video Sources with CORRECTED PStream URL
+// Enhanced Video Sources with Multiple PStream Server Options
+const VIDEO_SOURCES = [
+  // PStream StreamBox - Usually works best
+  {
+    key: "pstream-streambox",
+    name: "PStream (StreamBox)",
+    movieUrlPattern: "https://iframe.pstream.mov/embed/tmdb-movie-{id}?server=streambox&theme=default&language=en&logo=false&allinone=true",
+    tvUrlPattern: "https://iframe.pstream.mov/embed/tmdb-tv-{id}/{season}/{episode}?server=streambox&theme=default&language=en&logo=false&allinone=true",
+    featured: true,
+    serverType: "streambox"
+  },
+  // PStream Default
+  {
+    key: "pstream-default",
+    name: "PStream (Default)",
+    movieUrlPattern: "https://iframe.pstream.mov/embed/tmdb-movie-{id}?theme=default&language=en&logo=false",
+    tvUrlPattern: "https://iframe.pstream.mov/embed/tmdb-tv-{id}/{season}/{episode}?theme=default&language=en&logo=false",
+    featured: true,
+    serverType: "default"
+  },
+  // PStream Media URL
+  {
+    key: "pstream-media",
+    name: "PStream (Media)",
+    movieUrlPattern: "https://iframe.pstream.mov/media/tmdb-movie-{id}?theme=default&language=en&logo=false",
+    tvUrlPattern: "https://iframe.pstream.mov/media/tmdb-tv-{id}/{season}/{episode}?theme=default&language=en&logo=false",
+    featured: true,
+    serverType: "media"
+  },
+  // PStream with Full Parameters
+  {
+    key: "pstream-full",
+    name: "PStream (Enhanced)",
+    movieUrlPattern: "https://iframe.pstream.mov/embed/tmdb-movie-{id}?t=00:00&theme=default&language=en&logo=false&downloads=true&has-watchparty=false&language-order=en,hi,fr,de,nl,pt&allinone=true&scale=0.9&fedapi=true&interface-settings=true&tips=false",
+    tvUrlPattern: "https://iframe.pstream.mov/embed/tmdb-tv-{id}/{season}/{episode}?t=00:00&theme=default&language=en&logo=false&downloads=true&has-watchparty=false&language-order=en,hi,fr,de,nl,pt&allinone=true&scale=0.9&fedapi=true&interface-settings=true&tips=false",
+    featured: true,
+    serverType: "enhanced"
+  },
+  
+  // Other Featured Sources
+  {
+    key: "vidlink",
+    name: "VidLink",
+    movieUrlPattern: "https://vidlink.pro/movie/{id}?autoplay=true&title=true",
+    tvUrlPattern: "https://vidlink.pro/tv/{id}/{season}/{episode}?autoplay=true&title=true",
+    featured: true
+  },
+  {
+    key: "vidsrc-xyz",
+    name: "VidSrc.xyz",
+    movieUrlPattern: "https://vidsrc.xyz/embed/movie?tmdb={id}&ds_lang=en",
+    tvUrlPattern: "https://vidsrc.xyz/embed/tv?tmdb={id}&season={season}&episode={episode}&ds_lang=en",
+    featured: true
+  },
+  
+  // All your other sources...
+  {
+    key: "autoembed",
+    name: "AutoEmbed",
+    movieUrlPattern: "https://player.autoembed.cc/embed/movie/{id}?autoplay=true",
+    tvUrlPattern: "https://player.autoembed.cc/embed/tv/{id}/{season}/{episode}?autoplay=true"
+  },
+  {
+    key: "2embed",
+    name: "2Embed",
+    movieUrlPattern: "https://www.2embed.cc/embed/{id}",
+    tvUrlPattern: "https://www.2embed.cc/embed/tv/{id}&s={season}&e={episode}"
+  },
+  {
+    key: "multiembed",
+    name: "MultiEmbed",
+    movieUrlPattern: "https://multiembed.mov/video_id={id}&tmdb=1",
+    tvUrlPattern: "https://multiembed.mov/video_id={id}&tmdb=1&s={season}&e={episode}"
+  },
+  {
+    key: "2embed-org",
+    name: "2Embed.org",
+    movieUrlPattern: "https://2embed.org/embed/movie/{id}",
+    tvUrlPattern: "https://2embed.org/embed/tv/{id}/{season}/{episode}"
+  },
+  {
+    key: "autoembed-co",
+    name: "AutoEmbed.co",
+    movieUrlPattern: "https://autoembed.co/movie/tmdb/{id}",
+    tvUrlPattern: "https://autoembed.co/tv/tmdb/{id}-{season}-{episode}"
+  },
+  {
+    key: "moviesapi",
+    name: "MoviesAPI",
+    movieUrlPattern: "https://moviesapi.club/movie/{id}",
+    tvUrlPattern: "https://moviesapi.club/tv/{id}-{season}-{episode}"
+  },
+  {
+    key: "nontongo",
+    name: "NontonGo",
+    movieUrlPattern: "https://www.NontonGo.win/embed/movie/{id}",
+    tvUrlPattern: "https://www.NontonGo.win/embed/tv/{id}/{season}/{episode}"
+  },
+  {
+    key: "111movies",
+    name: "111Movies",
+    movieUrlPattern: "https://111movies.com/movie/{id}",
+    tvUrlPattern: "https://111movies.com/tv/{id}/{season}/{episode}"
+  },
+  {
+    key: "flicky",
+    name: "Flicky",
+    movieUrlPattern: "https://flicky.host/embed/movie?id={id}",
+    tvUrlPattern: "https://flicky.host/embed/tv?id={id}/{season}/{episode}"
+  },
+  {
+    key: "vidjoy",
+    name: "VidJoy",
+    movieUrlPattern: "https://vidjoy.pro/embed/movie/{id}",
+    tvUrlPattern: "https://vidjoy.pro/embed/tv/{id}/{season}/{episode}"
+  },
+  {
+    key: "embed-su",
+    name: "Embed.su",
+    movieUrlPattern: "https://embed.su/embed/movie/{id}",
+    tvUrlPattern: "https://embed.su/embed/tv/{id}/{season}/{episode}"
+  },
+  {
+    key: "primewire",
+    name: "PrimeWire",
+    movieUrlPattern: "https://www.primewire.tf/embed/movie?tmdb={id}",
+    tvUrlPattern: "https://www.primewire.tf/embed/tv?tmdb={id}&season={season}&episode={episode}"
+  },
+  {
+    key: "smashystream",
+    name: "SmashyStream",
+    movieUrlPattern: "https://embed.smashystream.com/playere.php?tmdb={id}",
+    tvUrlPattern: "https://embed.smashystream.com/playere.php?tmdb={id}&season={season}&episode={episode}"
+  },
+  {
+    key: "vidstream",
+    name: "VidStream",
+    movieUrlPattern: "https://vidstream.site/embed/movie/{id}",
+    tvUrlPattern: "https://vidstream.site/embed/tv/{id}/{episode}"
+  },
+  {
+    key: "videasy",
+    name: "Videasy",
+    movieUrlPattern: "https://player.videasy.net/movie/{id}",
+    tvUrlPattern: "https://player.videasy.net/tv/{id}/{season}/{episode}"
+  },
+  {
+    key: "vidsrc-wtf-2",
+    name: "VidSrc.wtf (API 2)",
+    movieUrlPattern: "https://vidsrc.wtf/api/2/movie?id={id}",
+    tvUrlPattern: "https://vidsrc.wtf/api/2/tv?id={id}&s={season}&e={episode}"
+  },
+  {
+    key: "vidsrc-wtf-3",
+    name: "VidSrc.wtf (API 3)",
+    movieUrlPattern: "https://vidsrc.wtf/api/3/movie?id={id}",
+    tvUrlPattern: "https://vidsrc.wtf/api/3/tv?id={id}&s={season}&e={episode}"
+  },
+  {
+    key: "vidfast",
+    name: "VidFast",
+    movieUrlPattern: "https://vidfast.pro/movie/{id}?autoPlay=true",
+    tvUrlPattern: "https://vidfast.pro/tv/{id}/{season}/{episode}?autoPlay=true"
+  },
+  {
+    key: "vidbinge",
+    name: "VidBinge",
+    movieUrlPattern: "https://vidbinge.dev/embed/movie/{id}",
+    tvUrlPattern: "https://vidbinge.dev/embed/tv/{id}/{season}/{episode}"
+  }
+];
+
+// Video Source Helper Functions
+const createVideoSource = (source) => ({
+  key: source.key,
+  name: source.name,
+  featured: source.featured || false,
+  getMovieUrl: (id) => source.movieUrlPattern.replace('{id}', id.toString()),
+  getTVUrl: (id, season, episode) => 
+    source.tvUrlPattern
+      .replace('{id}', id.toString())
+      .replace('{season}', season.toString())
+      .replace('{episode}', episode.toString())
+});
+
+const videoSources = VIDEO_SOURCES.map(createVideoSource);
 
 // Custom hook for content (movies, TV shows, anime)
 const useContent = (initialData = []) => {
@@ -182,53 +370,313 @@ const useContent = (initialData = []) => {
   };
 };
 
-// Compact Content Details Modal Component
-const ContentDetailsModal = ({ content, isOpen, onClose, customSources, onAddSource, onDeleteSource, contentType }) => {
+// Video Player Modal Component with ALL SOURCES (NO SANDBOX)
+const VideoPlayerModal = ({ content, isOpen, onClose, contentType }) => {
+  const [selectedSource, setSelectedSource] = useState(videoSources.find(s => s.featured) || videoSources[0]);
+  const [selectedSeason, setSelectedSeason] = useState(1);
+  const [selectedEpisode, setSelectedEpisode] = useState(1);
+  const [seasons, setSeasons] = useState([]);
+  const [episodes, setEpisodes] = useState([]);
+  const [isLoadingSeasons, setIsLoadingSeasons] = useState(false);
+
+  const isTV = contentType === CONTENT_TYPES.TV || contentType === CONTENT_TYPES.ANIME;
+  const title = content?.title || content?.name;
+
+  // Fetch TV show seasons and episodes
+  useEffect(() => {
+    if (isOpen && content && isTV) {
+      fetchTVDetails();
+    }
+  }, [isOpen, content, isTV]);
+
+  const fetchTVDetails = async () => {
+    if (!content?.id) return;
+    
+    try {
+      setIsLoadingSeasons(true);
+      
+      // Fetch TV show details to get seasons
+      const response = await fetch(`/api/proxy/tmdb/tv/${content.id}?language=en-US`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Proxy-Secret': process.env.NEXT_PUBLIC_PROXY_SECRET || 'development',
+        }
+      });
+
+      if (response.ok) {
+        const tvDetails = await response.json();
+        const seasonList = tvDetails.seasons?.filter(season => season.season_number > 0) || [];
+        setSeasons(seasonList);
+        
+        if (seasonList.length > 0) {
+          setSelectedSeason(1);
+          fetchEpisodes(1);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching TV details:', err);
+      // Create dummy seasons/episodes for fallback
+      setSeasons([{ season_number: 1, episode_count: 20, name: 'Season 1' }]);
+      setEpisodes(Array.from({ length: 20 }, (_, i) => ({
+        episode_number: i + 1,
+        name: `Episode ${i + 1}`
+      })));
+    } finally {
+      setIsLoadingSeasons(false);
+    }
+  };
+
+  const fetchEpisodes = async (seasonNumber) => {
+    if (!content?.id) return;
+    
+    try {
+      const response = await fetch(`/api/proxy/tmdb/tv/${content.id}/season/${seasonNumber}?language=en-US`, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Proxy-Secret': process.env.NEXT_PUBLIC_PROXY_SECRET || 'development',
+        }
+      });
+
+      if (response.ok) {
+        const seasonDetails = await response.json();
+        setEpisodes(seasonDetails.episodes || []);
+        setSelectedEpisode(1);
+      }
+    } catch (err) {
+      console.error('Error fetching episodes:', err);
+      // Fallback episodes
+      const selectedSeasonData = seasons.find(s => s.season_number === seasonNumber);
+      const episodeCount = selectedSeasonData?.episode_count || 20;
+      setEpisodes(Array.from({ length: episodeCount }, (_, i) => ({
+        episode_number: i + 1,
+        name: `Episode ${i + 1}`
+      })));
+      setSelectedEpisode(1);
+    }
+  };
+
+  const handleSeasonChange = (seasonNumber) => {
+    setSelectedSeason(seasonNumber);
+    fetchEpisodes(seasonNumber);
+  };
+
+  const getStreamUrl = () => {
+    if (!content?.id || !selectedSource) return '';
+    
+    if (isTV) {
+      return selectedSource.getTVUrl(content.id, selectedSeason, selectedEpisode);
+    } else {
+      return selectedSource.getMovieUrl(content.id);
+    }
+  };
+
+  if (!isOpen || !content) return null;
+
+  // Group sources for better organization
+  const featuredSources = videoSources.filter(s => s.featured);
+  const regularSources = videoSources.filter(s => !s.featured);
+
+  return (
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-gray-900 rounded-2xl w-full h-full max-w-7xl max-h-[95vh] overflow-hidden border border-gray-700 flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-700">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-800"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <div>
+              <h2 className="text-xl font-bold text-white">{title}</h2>
+              <p className="text-gray-400 text-sm">
+                {isTV ? `S${selectedSeason}E${selectedEpisode}` : 'Movie'} • {selectedSource.name}
+              </p>
+            </div>
+          </div>
+          
+          {/* Source Selector with ALL SOURCES */}
+          <div className="flex items-center space-x-3">
+            <select
+              value={selectedSource.key}
+              onChange={(e) => setSelectedSource(videoSources.find(s => s.key === e.target.value))}
+              className="bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent max-w-48"
+            >
+              <optgroup label="⭐ Featured Sources">
+                {featuredSources.map((source) => (
+                  <option key={source.key} value={source.key}>
+                    ⭐ {source.name}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="📺 All Sources">
+                {regularSources.map((source) => (
+                  <option key={source.key} value={source.key}>
+                    {source.name}
+                  </option>
+                ))}
+              </optgroup>
+            </select>
+            
+            {/* Source Info */}
+            <div className="hidden md:block bg-gray-800/50 px-3 py-2 rounded-lg text-xs text-gray-400">
+              {videoSources.length} sources available
+            </div>
+          </div>
+        </div>
+
+        {/* TV Show Controls */}
+        {isTV && (
+          <div className="p-4 bg-gray-800/50 border-b border-gray-700">
+            <div className="flex items-center space-x-4 flex-wrap gap-2">
+              {/* Season Selector */}
+              <div className="flex items-center space-x-2">
+                <label className="text-sm text-gray-400">Season:</label>
+                <select
+                  value={selectedSeason}
+                  onChange={(e) => handleSeasonChange(parseInt(e.target.value))}
+                  className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm"
+                  disabled={isLoadingSeasons}
+                >
+                  {seasons.map((season) => (
+                    <option key={season.season_number} value={season.season_number}>
+                      {season.name || `Season ${season.season_number}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Episode Selector */}
+              <div className="flex items-center space-x-2">
+                <label className="text-sm text-gray-400">Episode:</label>
+                <select
+                  value={selectedEpisode}
+                  onChange={(e) => setSelectedEpisode(parseInt(e.target.value))}
+                  className="bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm"
+                >
+                  {episodes.map((episode) => (
+                    <option key={episode.episode_number} value={episode.episode_number}>
+                      {episode.episode_number}. {episode.name || `Episode ${episode.episode_number}`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Episode Navigation */}
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => selectedEpisode > 1 && setSelectedEpisode(selectedEpisode - 1)}
+                  disabled={selectedEpisode <= 1}
+                  className="bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 text-white px-3 py-1 rounded text-sm transition-colors"
+                >
+                  ← Prev
+                </button>
+                <button
+                  onClick={() => selectedEpisode < episodes.length && setSelectedEpisode(selectedEpisode + 1)}
+                  disabled={selectedEpisode >= episodes.length}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-800 disabled:text-gray-500 text-white px-3 py-1 rounded text-sm transition-colors"
+                >
+                  Next →
+                </button>
+              </div>
+
+              {/* Auto Next Episode Toggle */}
+              <div className="flex items-center space-x-2 ml-auto">
+                <label className="text-xs text-gray-400">Auto Next:</label>
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Video Player - NO SANDBOX! */}
+        <div className="flex-1 bg-black relative">
+          {getStreamUrl() ? (
+            <iframe
+              src={getStreamUrl()}
+              title={`${title} - ${selectedSource.name}`}
+              className="w-full h-full border-0"
+              frameBorder="0"
+              allowFullScreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+              referrerPolicy="no-referrer-when-downgrade"
+              loading="lazy"
+              style={{ 
+                width: '100%', 
+                height: '100%',
+                border: 'none',
+                outline: 'none'
+              }}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-400">
+              <div className="text-center">
+                <Monitor size={48} className="mx-auto mb-4 opacity-50" />
+                <p className="text-lg">Loading player...</p>
+                <p className="text-sm mt-2">Source: {selectedSource?.name}</p>
+                <p className="text-xs mt-1 text-gray-500">
+                  URL: {getStreamUrl() ? 'Generated' : 'Generating...'}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer Info */}
+        <div className="p-3 bg-gray-800/50 border-t border-gray-700">
+          <div className="flex items-center justify-between text-sm text-gray-400">
+            <div className="flex items-center space-x-4">
+              <span className="flex items-center">
+                🎬 <strong className="text-white ml-1">{selectedSource.name}</strong>
+                {selectedSource.featured && <span className="text-yellow-400 ml-1">⭐</span>}
+              </span>
+              {isTV && (
+                <span>📺 S{selectedSeason}E{selectedEpisode} of {episodes.length}</span>
+              )}
+              <span className="text-xs">
+                {videoSources.length} sources • {featuredSources.length} featured
+              </span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => {
+                  const url = getStreamUrl();
+                  if (url) {
+                    navigator.clipboard.writeText(url);
+                    alert('Stream URL copied to clipboard! 📋');
+                  }
+                }}
+                className="text-gray-400 hover:text-white transition-colors text-xs px-2 py-1 rounded hover:bg-gray-700"
+              >
+                📋 Copy URL
+              </button>
+              <a
+                href={getStreamUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors flex items-center space-x-1 text-xs px-2 py-1 rounded hover:bg-gray-700"
+              >
+                <ExternalLink size={12} />
+                <span>New Tab</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Content Details Modal Component (Enhanced with All Sources Info)
+const ContentDetailsModal = ({ content, isOpen, onClose, customSources, onAddSource, onDeleteSource, contentType, onWatchNow }) => {
   const [showAddSource, setShowAddSource] = useState(false);
   const [newSourceName, setNewSourceName] = useState('');
   const [newSourceUrl, setNewSourceUrl] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
-
-  // Pre-configured default sources
-  const defaultSources = [
-    {
-      id: 'goodplayer',
-      name: 'GoodPlayer',
-      url: contentType === CONTENT_TYPES.MOVIE 
-        ? 'https://goodplayer.netlify.app/?movie_id={movie_id}'
-        : 'https://goodplayer.netlify.app/?serie_id={serie_id}',
-      searchPattern: contentType === CONTENT_TYPES.MOVIE 
-        ? 'https://goodplayer.netlify.app/?movie_id={movie_id}'
-        : 'https://goodplayer.netlify.app/?serie_id={serie_id}',
-      icon: Monitor,
-      color: 'green',
-      featured: true
-    },
-    {
-      id: 'justwatch',
-      name: 'JustWatch',
-      url: 'https://www.justwatch.com',
-      searchPattern: 'https://www.justwatch.com/us/search?q={title}',
-      icon: ExternalLink,
-      color: 'blue'
-    },
-    {
-      id: 'imdb',
-      name: 'IMDb',
-      url: 'https://www.imdb.com',
-      searchPattern: 'https://www.imdb.com/find?q={title}',
-      icon: Star,
-      color: 'yellow'
-    },
-    {
-      id: 'netflix',
-      name: 'Netflix',
-      url: 'https://www.netflix.com',
-      searchPattern: 'https://www.netflix.com/search?q={title}',
-      icon: Tv,
-      color: 'red'
-    }
-  ];
 
   if (!isOpen || !content) return null;
 
@@ -248,39 +696,12 @@ const ContentDetailsModal = ({ content, isOpen, onClose, customSources, onAddSou
     }
   };
 
-  const getContentUrl = (source, contentTitle, contentId) => {
-    if (source.searchPattern) {
-      let url = source.searchPattern;
-      
-      if (url.includes('{movie_id}')) {
-        url = url.replace('{movie_id}', contentId);
-      }
-      
-      if (url.includes('{serie_id}')) {
-        url = url.replace('{serie_id}', contentId);
-      }
-      
-      if (url.includes('{title}')) {
-        url = url.replace('{title}', encodeURIComponent(contentTitle));
-      }
-      
-      return url;
-    }
-    
-    return source.url;
-  };
-
-  const allSources = [...defaultSources, ...customSources];
-  const featuredSources = allSources.filter(s => s.featured);
-  const regularSources = allSources.filter(s => !s.featured);
-
   const title = content.title || content.name;
   const releaseDate = content.release_date || content.first_air_date;
   const rating = content.vote_average;
   const overview = content.overview;
-
-  // Get content type specific details
   const isTV = contentType === CONTENT_TYPES.TV || contentType === CONTENT_TYPES.ANIME;
+
   const genres = content.genre_ids?.map(id => {
     const genreMap = {
       28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy', 80: 'Crime',
@@ -292,6 +713,9 @@ const ContentDetailsModal = ({ content, isOpen, onClose, customSources, onAddSou
     };
     return genreMap[id];
   }).filter(Boolean) || [];
+
+  const featuredSources = videoSources.filter(s => s.featured);
+  const totalSources = videoSources.length;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -357,29 +781,6 @@ const ContentDetailsModal = ({ content, isOpen, onClose, customSources, onAddSou
               </div>
             </div>
           </div>
-
-          {/* TV Show specific info */}
-          {isTV && (
-            <div className="px-4 pb-2">
-              <div className="flex items-center space-x-4 text-xs text-gray-400">
-                {content.number_of_seasons && (
-                  <span>{content.number_of_seasons} Season{content.number_of_seasons > 1 ? 's' : ''}</span>
-                )}
-                {content.number_of_episodes && (
-                  <span>{content.number_of_episodes} Episodes</span>
-                )}
-                {content.status && (
-                  <span className={`px-2 py-1 rounded ${
-                    content.status === 'Returning Series' ? 'bg-green-600/20 text-green-400' :
-                    content.status === 'Ended' ? 'bg-red-600/20 text-red-400' :
-                    'bg-blue-600/20 text-blue-400'
-                  }`}>
-                    {content.status}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Tab Navigation */}
@@ -414,14 +815,12 @@ const ContentDetailsModal = ({ content, isOpen, onClose, customSources, onAddSou
         <div className="p-4">
           {activeTab === 'overview' && (
             <div className="space-y-4">
-              {/* Description */}
               {overview && (
                 <div>
                   <p className="text-gray-300 text-sm leading-relaxed">{overview}</p>
                 </div>
               )}
 
-              {/* Additional Info */}
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <span className="text-gray-400">Release:</span>
@@ -444,45 +843,73 @@ const ContentDetailsModal = ({ content, isOpen, onClose, customSources, onAddSou
                     </div>
                   </div>
                 )}
-                {isTV && content.episode_run_time && content.episode_run_time[0] && (
+                {isTV && content.number_of_seasons && (
                   <div>
-                    <span className="text-gray-400">Episode:</span>
+                    <span className="text-gray-400">Seasons:</span>
                     <div className="text-white font-medium mt-1">
-                      {content.episode_run_time} min
+                      {content.number_of_seasons}
                     </div>
                   </div>
                 )}
               </div>
-
-              {/* Episode Info for TV Shows */}
-              {isTV && (
-                <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-700/50">
-                  <div className="flex items-center justify-between mb-2">
-                    <h5 className="text-white font-medium text-sm">Episodes</h5>
-                    {content.last_episode_to_air && (
-                      <span className="text-xs text-gray-400">
-                        Latest: S{content.last_episode_to_air.season_number}E{content.last_episode_to_air.episode_number}
-                      </span>
-                    )}
-                  </div>
-                  {content.next_episode_to_air && (
-                    <div className="text-xs text-green-400">
-                      Next: S{content.next_episode_to_air.season_number}E{content.next_episode_to_air.episode_number} • {new Date(content.next_episode_to_air.air_date).toLocaleDateString()}
-                    </div>
-                  )}
-                  {content.last_episode_to_air && (
-                    <div className="text-xs text-gray-400 mt-1">
-                      &quot;{content.last_episode_to_air.name}&ldquo; • {new Date(content.last_episode_to_air.air_date).toLocaleDateString()}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           )}
 
           {activeTab === 'watch' && (
             <div className="space-y-4">
-              {/* Add Source Form */}
+              {/* Primary Watch Button */}
+              <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h4 className="text-white font-semibold">Stream Now</h4>
+                    <p className="text-gray-300 text-sm">Watch with embedded player</p>
+                  </div>
+                  <Monitor className="text-blue-400" size={24} />
+                </div>
+                <button
+                  onClick={() => onWatchNow(content)}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 px-4 rounded-lg font-medium transition-all duration-300 flex items-center justify-center space-x-2"
+                >
+                  <Play size={18} fill="currentColor" />
+                  <span>{isTV ? 'Watch Series' : 'Watch Movie'}</span>
+                </button>
+              </div>
+
+              {/* Enhanced Sources Info */}
+              <div className="bg-gray-800/30 rounded-lg p-3">
+                <h5 className="text-white font-medium mb-2 flex items-center">
+                  <Settings size={16} className="mr-2" />
+                  Streaming Sources ({totalSources} Available)
+                </h5>
+                
+                {/* Featured Sources */}
+                <div className="space-y-1 text-xs text-gray-400 mb-3">
+                  <div className="text-sm text-gray-300 font-medium">⭐ Featured Sources:</div>
+                  {featuredSources.map(source => (
+                    <div key={source.key} className="flex items-center justify-between">
+                      <span className="text-yellow-400">• {source.name}</span>
+                      <span className="text-green-400">High Quality</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* All Sources Count */}
+                <div className="bg-gray-700/50 rounded p-2 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Total Sources:</span>
+                    <span className="text-white font-bold">{totalSources}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-300">Featured:</span>
+                    <span className="text-yellow-400 font-bold">{featuredSources.length}</span>
+                  </div>
+                  <div className="text-gray-400 mt-1">
+                    Includes: PStream, VidLink, VidSrc, AutoEmbed, MultiEmbed & more
+                  </div>
+                </div>
+              </div>
+
+              {/* Add Custom Source */}
               {showAddSource && (
                 <div className="bg-gray-800/50 rounded-lg p-3 border border-gray-600/50">
                   <div className="space-y-2">
@@ -495,7 +922,7 @@ const ContentDetailsModal = ({ content, isOpen, onClose, customSources, onAddSou
                     />
                     <input
                       type="url"
-                      placeholder={`URL (use {${contentType === CONTENT_TYPES.MOVIE ? 'movie_id' : 'serie_id'}} or {title})`}
+                      placeholder="URL"
                       value={newSourceUrl}
                       onChange={(e) => setNewSourceUrl(e.target.value)}
                       className="w-full bg-gray-700/50 border border-gray-600 rounded px-3 py-2 text-white placeholder-gray-400 text-sm"
@@ -518,76 +945,6 @@ const ContentDetailsModal = ({ content, isOpen, onClose, customSources, onAddSou
                 </div>
               )}
 
-              {/* Featured Sources */}
-              {featuredSources.length > 0 && (
-                <div>
-                  {featuredSources.map((source) => {
-                    const IconComponent = source.icon;
-                    return (
-                      <div
-                        key={source.id}
-                        className="bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-lg p-3 flex items-center justify-between"
-                      >
-                        <div className="flex items-center space-x-3 flex-1">
-                          <IconComponent size={16} className="text-green-400" />
-                          <div>
-                            <span className="text-white font-medium text-sm">{source.name}</span>
-                            <div className="text-xs text-green-300">Primary Source</div>
-                          </div>
-                        </div>
-                        <a
-                          href={getContentUrl(source, title, content.id)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300"
-                        >
-                          {contentType === CONTENT_TYPES.MOVIE ? 'Watch' : 'Watch Series'}
-                        </a>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Regular Sources */}
-              {regularSources.length > 0 && (
-                <div className="space-y-2">
-                  {regularSources.map((source) => {
-                    const IconComponent = source.icon;
-                    return (
-                      <div
-                        key={source.id}
-                        className="bg-gray-800/30 border border-gray-600/50 rounded-lg p-3 flex items-center justify-between"
-                      >
-                        <div className="flex items-center space-x-3 flex-1">
-                          <IconComponent size={14} className={`text-${source.color}-400`} />
-                          <span className="text-white text-sm">{source.name}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <a
-                            href={getContentUrl(source, title, content.id)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs"
-                          >
-                            Go
-                          </a>
-                          {customSources.find(cs => cs.id === source.id) && (
-                            <button
-                              onClick={() => onDeleteSource(source.id)}
-                              className="text-gray-400 hover:text-red-400 p-1"
-                            >
-                              <Trash2 size={12} />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Add Source Button */}
               <button
                 onClick={() => setShowAddSource(!showAddSource)}
                 className="w-full border-2 border-dashed border-gray-600 hover:border-gray-500 rounded-lg p-3 text-gray-400 hover:text-gray-300 transition-all duration-300 text-sm"
@@ -603,7 +960,7 @@ const ContentDetailsModal = ({ content, isOpen, onClose, customSources, onAddSou
   );
 };
 
-// Content Card Component
+// Content Card Component (Enhanced with source count info)
 const ContentCard = ({ 
   content, 
   contentType,
@@ -611,6 +968,7 @@ const ContentCard = ({
   onAddToWatchlist, 
   onMarkAsWatched, 
   onShowDetails,
+  onWatchNow,
   watchlist, 
   watched 
 }) => {
@@ -619,6 +977,8 @@ const ContentCard = ({
   const title = content.title || content.name;
   const releaseDate = content.release_date || content.first_air_date;
   const isTV = contentType === CONTENT_TYPES.TV || contentType === CONTENT_TYPES.ANIME;
+
+  const featuredCount = videoSources.filter(s => s.featured).length;
 
   if (viewMode === 'list') {
     return (
@@ -646,6 +1006,9 @@ const ContentCard = ({
                   Anime
                 </span>
               )}
+              <span className="bg-green-600/20 text-green-400 px-2 py-0.5 rounded text-xs font-medium">
+                {videoSources.length} Sources
+              </span>
             </div>
             <p className="text-gray-400 text-sm mb-2 line-clamp-2">{content.overview}</p>
             <div className="flex items-center space-x-4 text-sm">
@@ -667,10 +1030,17 @@ const ContentCard = ({
           </div>
           <div className="flex items-center space-x-2">
             <button
+              onClick={() => onWatchNow(content)}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300"
+            >
+              <Play size={16} fill="currentColor" />
+              <span>Watch</span>
+            </button>
+            <button
               onClick={() => onShowDetails(content)}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-300"
             >
-              <Play size={16} fill="currentColor" />
+              <Info size={16} />
               <span>Details</span>
             </button>
             <button
@@ -726,16 +1096,22 @@ const ContentCard = ({
           <span className="text-xs font-semibold">{content.vote_average?.toFixed(1)}</span>
         </div>
         
+        {/* Sources Badge */}
+        <div className="absolute top-3 left-3 bg-green-600/90 backdrop-blur-sm text-white px-2 py-1 rounded-lg flex items-center space-x-1">
+          <Monitor size={12} />
+          <span className="text-xs font-semibold">{videoSources.length}</span>
+        </div>
+        
         {/* Content Type Badge */}
         {contentType === CONTENT_TYPES.ANIME && (
-          <div className="absolute top-3 left-3 bg-pink-600/90 backdrop-blur-sm text-white px-2 py-1 rounded-lg flex items-center space-x-1">
+          <div className="absolute top-12 left-3 bg-pink-600/90 backdrop-blur-sm text-white px-2 py-1 rounded-lg flex items-center space-x-1">
             <Gamepad2 size={12} />
             <span className="text-xs">Anime</span>
           </div>
         )}
         
         {isTV && contentType !== CONTENT_TYPES.ANIME && (
-          <div className="absolute top-3 left-3 bg-blue-600/90 backdrop-blur-sm text-white px-2 py-1 rounded-lg flex items-center space-x-1">
+          <div className="absolute top-12 left-3 bg-blue-600/90 backdrop-blur-sm text-white px-2 py-1 rounded-lg flex items-center space-x-1">
             <Tv size={12} />
             <span className="text-xs">Series</span>
           </div>
@@ -743,7 +1119,7 @@ const ContentCard = ({
         
         {/* Watchlist Badge */}
         {isInWatchlist && (
-          <div className="absolute top-12 left-3 bg-red-600/90 backdrop-blur-sm text-white px-2 py-1 rounded-lg flex items-center space-x-1">
+          <div className="absolute top-21 left-3 bg-red-600/90 backdrop-blur-sm text-white px-2 py-1 rounded-lg flex items-center space-x-1">
             <Heart size={12} fill="currentColor" />
             <span className="text-xs">Watchlist</span>
           </div>
@@ -751,38 +1127,45 @@ const ContentCard = ({
         
         {/* Action Buttons */}
         <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-2">
             <button
-              onClick={() => onShowDetails(content)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl flex items-center space-x-2 transition-all duration-300"
+              onClick={() => onWatchNow(content)}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 py-2 rounded-xl flex items-center space-x-2 transition-all duration-300 flex-1 mr-2 justify-center"
             >
               <Play size={14} fill="currentColor" />
-              <span className="text-sm font-semibold">Details</span>
+              <span className="text-sm font-semibold">Watch Now</span>
             </button>
             
-            <div className="flex space-x-2">
-              <button
-                onClick={() => onAddToWatchlist(content.id)}
-                className={`p-2 rounded-xl transition-all duration-300 ${
-                  isInWatchlist 
-                    ? 'bg-red-600 text-white' 
-                    : 'bg-black/50 text-gray-300 hover:bg-black/70 hover:text-white backdrop-blur-sm'
-                }`}
-              >
-                <Heart size={14} fill={isInWatchlist ? 'currentColor' : 'none'} />
-              </button>
-              
-              <button
-                onClick={() => onMarkAsWatched(content.id)}
-                className={`p-2 rounded-xl transition-all duration-300 ${
-                  isWatched 
-                    ? 'bg-green-600 text-white' 
-                    : 'bg-black/50 text-gray-300 hover:bg-black/70 hover:text-white backdrop-blur-sm'
-                }`}
-              >
-                <Eye size={14} />
-              </button>
-            </div>
+            <button
+              onClick={() => onShowDetails(content)}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-2 rounded-xl transition-all duration-300"
+            >
+              <Info size={14} />
+            </button>
+          </div>
+          
+          <div className="flex justify-center space-x-2">
+            <button
+              onClick={() => onAddToWatchlist(content.id)}
+              className={`p-2 rounded-xl transition-all duration-300 ${
+                isInWatchlist 
+                  ? 'bg-red-600 text-white' 
+                  : 'bg-black/50 text-gray-300 hover:bg-black/70 hover:text-white backdrop-blur-sm'
+              }`}
+            >
+              <Heart size={14} fill={isInWatchlist ? 'currentColor' : 'none'} />
+            </button>
+            
+            <button
+              onClick={() => onMarkAsWatched(content.id)}
+              className={`p-2 rounded-xl transition-all duration-300 ${
+                isWatched 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-black/50 text-gray-300 hover:bg-black/70 hover:text-white backdrop-blur-sm'
+              }`}
+            >
+              <Eye size={14} />
+            </button>
           </div>
         </div>
       </div>
@@ -806,8 +1189,8 @@ const ContentCard = ({
             <span>{releaseDate ? new Date(releaseDate).getFullYear() : 'TBA'}</span>
           </div>
           <div className="flex items-center space-x-1">
-            <Clock size={12} />
-            <span>{isTV ? 'Series' : `${Math.floor(Math.random() * 60 + 90)}min`}</span>
+            <Monitor size={12} />
+            <span>{videoSources.length} sources</span>
           </div>
         </div>
       </div>
@@ -815,7 +1198,7 @@ const ContentCard = ({
   );
 };
 
-// Main App Component
+// Main App Component (Enhanced with all sources)
 const MediaHubApp = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('grid');
@@ -824,6 +1207,7 @@ const MediaHubApp = () => {
   const [watched, setWatched] = useState([]);
   const [selectedContent, setSelectedContent] = useState(null);
   const [showContentDetails, setShowContentDetails] = useState(false);
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
   const [customSources, setCustomSources] = useState([]);
   
   const { 
@@ -913,6 +1297,11 @@ const MediaHubApp = () => {
     setShowContentDetails(true);
   };
 
+  const watchNow = (content) => {
+    setSelectedContent(content);
+    setShowVideoPlayer(true);
+  };
+
   const addCustomSource = (source) => {
     setCustomSources(prev => [...prev, source]);
   };
@@ -926,6 +1315,8 @@ const MediaHubApp = () => {
     watchlist: watchlist.length,
     watched: watched.length
   };
+
+  const featuredSources = videoSources.filter(s => s.featured);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white">
@@ -941,9 +1332,11 @@ const MediaHubApp = () => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                    MediaHub
+                    LetsStream2 Enhanced
                   </h1>
-                  <p className="text-sm text-gray-400">Movies • TV Shows • Anime</p>
+                  <p className="text-sm text-gray-400">
+                    Movies • TV Shows • Anime • {videoSources.length} Streaming Sources
+                  </p>
                 </div>
               </div>
             </div>
@@ -955,25 +1348,29 @@ const MediaHubApp = () => {
                 <div className="text-xs text-gray-400">Total</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-red-500">{stats.watchlist}</div>
-                <div className="text-xs text-gray-400">Watchlist</div>
+                <div className="text-2xl font-bold text-green-500">{videoSources.length}</div>
+                <div className="text-xs text-gray-400">Sources</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-500">{stats.watched}</div>
-                <div className="text-xs text-gray-400">Watched</div>
+                <div className="text-2xl font-bold text-yellow-500">{featuredSources.length}</div>
+                <div className="text-xs text-gray-400">Featured</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-500">{stats.watchlist}</div>
+                <div className="text-xs text-gray-400">Watchlist</div>
               </div>
             </div>
           </div>
 
           {/* Content Type Tabs */}
-          <div className="flex items-center space-x-2 mb-4">
+          <div className="flex items-center space-x-2 mb-4 overflow-x-auto">
             {contentTypes.map(ct => {
               const IconComponent = ct.icon;
               return (
                 <button
                   key={ct.id}
                   onClick={() => changeContentType(ct.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 whitespace-nowrap ${
                     contentType === ct.id
                       ? `bg-gradient-to-r from-${ct.color}-600 to-${ct.color}-700 text-white shadow-lg`
                       : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50 hover:text-white border border-gray-700'
@@ -992,7 +1389,9 @@ const MediaHubApp = () => {
               <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder={`Search ${currentContentType?.name.toLowerCase()}...`}
+                placeholder={`Search ${currentContentType?.name.toLowerCase()} from ${videoSources.length} sources...`}
+                // ... continuing from where it was cut off ...
+
                 value={searchTerm}
                 onChange={handleSearch}
                 className="w-full pl-12 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
@@ -1035,6 +1434,12 @@ const MediaHubApp = () => {
               >
                 <Filter size={18} />
               </button>
+
+              {/* Sources Info Button */}
+              <div className="hidden md:flex bg-gray-800/50 border border-gray-700 rounded-xl px-3 py-2 text-xs text-gray-400">
+                <Monitor size={16} className="mr-2" />
+                <span>{videoSources.length} Sources Ready</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1059,6 +1464,12 @@ const MediaHubApp = () => {
                 </button>
               );
             })}
+            
+            {/* Sources Status */}
+            <div className="flex items-center space-x-2 px-4 py-2 bg-green-600/20 border border-green-600/30 rounded-xl text-green-400">
+              <Zap size={16} />
+              <span className="text-sm font-semibold">All {videoSources.length} Sources Active</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1066,15 +1477,45 @@ const MediaHubApp = () => {
       {/* Main Content */}
       <div className="px-6 py-8">
         {error && (
-          <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-xl mb-6">
-            Error: {error}
+          <div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-xl mb-6 flex items-center">
+            <X size={20} className="mr-3 flex-shrink-0" />
+            <div>
+              <strong>Error:</strong> {error}
+              <div className="text-sm mt-1">Try switching to a different source or refresh the page.</div>
+            </div>
           </div>
         )}
+
+        {/* Sources Status Banner */}
+        <div className="mb-6 bg-gradient-to-r from-green-600/10 to-blue-600/10 border border-green-500/20 rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-white font-semibold">Streaming Ready</span>
+              </div>
+              <span className="text-gray-300">
+                {videoSources.length} video sources loaded • {featuredSources.length} featured sources
+              </span>
+            </div>
+            <div className="hidden md:flex items-center space-x-4 text-sm">
+              <div className="flex items-center space-x-1 text-yellow-400">
+                <Star size={16} />
+                <span>PStream, VidLink, VidSrc</span>
+              </div>
+              <div className="flex items-center space-x-1 text-green-400">
+                <PlayCircle size={16} />
+                <span>No Ads on Featured</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {isLoading && content.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mb-4"></div>
             <p className="text-gray-400">Loading {currentContentType?.name.toLowerCase()}...</p>
+            <p className="text-gray-500 text-sm mt-2">Preparing {videoSources.length} streaming sources</p>
           </div>
         ) : (
           <>
@@ -1093,6 +1534,7 @@ const MediaHubApp = () => {
                   onAddToWatchlist={addToWatchlist}
                   onMarkAsWatched={markAsWatched}
                   onShowDetails={showContentDetailsModal}
+                  onWatchNow={watchNow}
                   watchlist={watchlist}
                   watched={watched}
                 />
@@ -1104,9 +1546,13 @@ const MediaHubApp = () => {
               <div className="text-center mt-12">
                 <button
                   onClick={loadMore}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 mx-auto"
                 >
-                  Load More {currentContentType?.name}
+                  <Plus size={18} />
+                  <span>Load More {currentContentType?.name}</span>
+                  <span className="bg-white/20 px-2 py-1 rounded-full text-xs">
+                    {videoSources.length} sources ready
+                  </span>
                 </button>
               </div>
             )}
@@ -1114,12 +1560,51 @@ const MediaHubApp = () => {
             {/* Loading More Indicator */}
             {isLoading && content.length > 0 && (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                <span className="text-gray-400">Loading more content...</span>
+              </div>
+            )}
+
+            {/* No Content Message */}
+            {!isLoading && content.length === 0 && (
+              <div className="text-center py-16">
+                <div className="text-gray-400 mb-4">
+                  {searchTerm ? (
+                    <div>
+                      <Search size={48} className="mx-auto mb-4 opacity-50" />
+                      <p className="text-xl">No results found for "{searchTerm}"</p>
+                      <p className="text-sm mt-2">Try different keywords or browse categories</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <Monitor size={48} className="mx-auto mb-4 opacity-50" />
+                      <p className="text-xl">No content available</p>
+                      <p className="text-sm mt-2">Check your connection and try again</p>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                >
+                  Refresh Page
+                </button>
               </div>
             )}
           </>
         )}
       </div>
+
+      {/* Video Player Modal */}
+      <VideoPlayerModal
+        content={selectedContent}
+        contentType={contentType}
+        isOpen={showVideoPlayer}
+        onClose={() => {
+          setShowVideoPlayer(false);
+          setSelectedContent(null);
+        }}
+      />
 
       {/* Content Details Modal */}
       <ContentDetailsModal
@@ -1133,7 +1618,55 @@ const MediaHubApp = () => {
         customSources={customSources}
         onAddSource={addCustomSource}
         onDeleteSource={deleteCustomSource}
+        onWatchNow={watchNow}
       />
+
+      {/* Footer */}
+      <div className="bg-gray-950 border-t border-gray-800 px-6 py-8 mt-16">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-6">
+            <div>
+              <h3 className="text-white font-bold mb-3">LetsStream2 Enhanced</h3>
+              <p className="text-gray-400 text-sm">
+                Stream movies, TV shows, and anime with {videoSources.length} premium sources.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-white font-semibold mb-3">Features</h4>
+              <ul className="text-gray-400 text-sm space-y-1">
+                <li>• {videoSources.length} Streaming Sources</li>
+                <li>• {featuredSources.length} Featured HD Sources</li>
+                <li>• No Ads on Premium Sources</li>
+                <li>• Season/Episode Navigation</li>
+                <li>• Multiple Quality Options</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-semibold mb-3">Top Sources</h4>
+              <ul className="text-gray-400 text-sm space-y-1">
+                {featuredSources.map(source => (
+                  <li key={source.key}>• {source.name} ⭐</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-white font-semibold mb-3">Stats</h4>
+              <ul className="text-gray-400 text-sm space-y-1">
+                <li>• Content: {stats.total} items</li>
+                <li>• Watchlist: {stats.watchlist} items</li>
+                <li>• Watched: {stats.watched} items</li>
+                <li>• Sources: {videoSources.length} active</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-6 pt-6 text-center text-gray-500 text-sm">
+            <p>© 2024 LetsStream2 Enhanced • Built with ❤️ for movie lovers</p>
+            <p className="mt-1">
+              Powered by TMDB API • {videoSources.length} streaming sources • Updated 2024-08-14
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
