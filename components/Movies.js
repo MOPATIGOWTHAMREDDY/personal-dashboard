@@ -1572,7 +1572,7 @@ const MediaHubApp = () => {
                   {searchTerm ? (
                     <div>
                       <Search size={48} className="mx-auto mb-4 opacity-50" />
-                      <p className="text-xl">No results found for "{searchTerm}"</p>
+                      <p className="text-xl">No results found for &quot;{searchTerm}&quot;</p>
                       <p className="text-sm mt-2">Try different keywords or browse categories</p>
                     </div>
                   ) : (

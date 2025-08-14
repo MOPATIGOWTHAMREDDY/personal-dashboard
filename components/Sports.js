@@ -603,7 +603,7 @@ const AdvancedStreamedSports = () => {
                     Live Matches
                   </>
                 )}
-                {activeTab === 'today' && <><Calendar className="mr-3" size={28} />Today's Matches</>}
+                {activeTab === 'today' && <><Calendar className="mr-3" size={28} />Today&lsquo;s Matches</>}
                 {activeTab === 'popular' && <><TrendingUp className="mr-3" size={28} />Popular Matches</>}
                 {activeTab === 'all' && <><Trophy className="mr-3" size={28} />All Matches</>}
                 {!['live', 'today', 'popular', 'all'].includes(activeTab) && (
@@ -917,7 +917,7 @@ const AdvancedStreamedSports = () => {
                   <Search className="mx-auto h-16 w-16 text-gray-300 mb-4" />
                   <h3 className="text-xl font-medium text-gray-900 mb-2">No matches found</h3>
                   <p className="text-gray-500 mb-6">
-                    No matches found for "{searchTerm}". Try adjusting your search terms.
+                    No matches found for &quot;{searchTerm}&ldquo;. Try adjusting your search terms.
                   </p>
                   <button
                     onClick={() => setSearchTerm('')}
