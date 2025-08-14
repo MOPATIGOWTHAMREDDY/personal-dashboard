@@ -44,6 +44,10 @@ const nextConfig = {
         source: '/api/player/:path*',
         destination: 'https://goodplayer.netlify.app/:path*',
       },
+      {
+  source: '/api/proxy/tmdb/:path*',
+  destination: 'https://api.themoviedb.org/3/:path*',
+}
     ];
   },
 
